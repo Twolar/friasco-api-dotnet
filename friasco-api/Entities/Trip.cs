@@ -4,8 +4,8 @@ namespace friasco_api.Entities;
 
 public class Trip
 {
-    public Guid Id;
-    public Guid UserId;
+    public int Id;
+    public int UserId;
     public string? Location;
     public DateTime? StartDate;
     public DateTime? EndDate;
