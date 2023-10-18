@@ -6,9 +6,9 @@ public class Trip
 {
     public Guid Id;
     public Guid UserId;
-    public string Location;
-    public DateTime StartDate;
-    public DateTime EndDate;
+    public string? Location;
+    public DateTime? StartDate;
+    public DateTime? EndDate;
     public TripStatusEnum Status;
     public TripPrivacyEnum PrivacyStatus;
 }
