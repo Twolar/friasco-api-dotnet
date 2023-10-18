@@ -4,7 +4,7 @@ namespace friasco_api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class TripController : ControllerBase
+public class TripsController : ControllerBase
 {
     // Create
     // Read
