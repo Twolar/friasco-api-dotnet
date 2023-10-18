@@ -4,30 +4,11 @@ namespace friasco_api.Entities;
 
 public class Trip
 {
-    private Guid _id;
-    private Guid _userId;
-    private string _location;
-    private DateTime _startDate;
-    private DateTime _endDate;
-    private TripStatusEnum _status;
-    private TripPrivacyEnum _privacyStatus;
-
-    public Trip(
-        Guid id,
-        Guid userId,
-        string location,
-        DateTime startDate,
-        DateTime endDate,
-        TripStatusEnum status,
-        TripPrivacyEnum privacyStatus
-        )
-    {
-        _id = id;
-        _userId = userId;
-        _location = location;
-        _startDate = startDate;
-        _endDate = endDate;
-        _status = status;
-        _privacyStatus = privacyStatus;
-    }
+    public Guid Id;
+    public Guid UserId;
+    public string Location;
+    public DateTime StartDate;
+    public DateTime EndDate;
+    public TripStatusEnum Status;
+    public TripPrivacyEnum PrivacyStatus;
 }
