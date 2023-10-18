@@ -1,4 +1,4 @@
-namespace friasco_api;
+namespace friasco_api.Models;
 
 public class WeatherForecast
 {

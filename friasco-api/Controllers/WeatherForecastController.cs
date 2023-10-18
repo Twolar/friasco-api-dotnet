@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using friasco_api.Models;
 
 namespace friasco_api.Controllers;
 
