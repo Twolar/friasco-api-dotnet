@@ -1,6 +1,6 @@
 ﻿using friasco_api.Enums;
 
-namespace friasco_api.Entities;
+namespace friasco_api.Data.Entities;
 
 public class Trip
 {
