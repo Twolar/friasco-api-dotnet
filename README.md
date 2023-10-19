@@ -48,7 +48,8 @@ To get a local copy up and running follow the steps below.
 
 ### Get Started Instructions
 
-1. To run the api "dotnet run --launch-profile https" _(API swagger documentation is now served on https://localhost:8000/swagger or http://localhost:7999/swagger, and terminate it via 'control + c')_
+1. Trust the HTTPS development certificate by running the following command "dotnet dev-certs https --trust"
+2. To run the api "dotnet run --launch-profile https" _(API swagger documentation is now served on https://localhost:8000/swagger or http://localhost:7999/swagger, and terminate it via 'control + c')_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
