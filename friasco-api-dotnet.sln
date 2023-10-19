@@ -5,7 +5,9 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "friasco-api", "friasco-api\friasco-api.csproj", "{016EA710-3488-4AD8-9B37-59D4C5245936}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "friasco-api-test", "friasco-api-test\friasco-api-test.csproj", "{10F98A69-76E9-4482-A119-481E46FAF893}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "friasco-api-unit-tests", "friasco-api-unit-tests\friasco-api-unit-tests.csproj", "{D49FA305-44D1-4F8A-84D7-F36FF0E79881}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "friasco-api-integration-tests", "friasco-api-integration-tests\friasco-api-integration-tests.csproj", "{04241C46-C960-45B3-AEAB-116F8D3F4816}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +19,14 @@ Global
 		{016EA710-3488-4AD8-9B37-59D4C5245936}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{016EA710-3488-4AD8-9B37-59D4C5245936}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{016EA710-3488-4AD8-9B37-59D4C5245936}.Release|Any CPU.Build.0 = Release|Any CPU
-		{10F98A69-76E9-4482-A119-481E46FAF893}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{10F98A69-76E9-4482-A119-481E46FAF893}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{10F98A69-76E9-4482-A119-481E46FAF893}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{10F98A69-76E9-4482-A119-481E46FAF893}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D49FA305-44D1-4F8A-84D7-F36FF0E79881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D49FA305-44D1-4F8A-84D7-F36FF0E79881}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D49FA305-44D1-4F8A-84D7-F36FF0E79881}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D49FA305-44D1-4F8A-84D7-F36FF0E79881}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04241C46-C960-45B3-AEAB-116F8D3F4816}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04241C46-C960-45B3-AEAB-116F8D3F4816}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04241C46-C960-45B3-AEAB-116F8D3F4816}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04241C46-C960-45B3-AEAB-116F8D3F4816}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
