@@ -12,8 +12,9 @@ public class UsersController : ControllerBase
     {
         _logger = logger;
     }
+
     // Create
-    // Read
+    // Read all / byId
     // Update
     // Delete
 }
