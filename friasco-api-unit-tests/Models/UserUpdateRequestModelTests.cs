@@ -2,6 +2,7 @@
 
 namespace friasco_api_unit_tests.Models;
 
+[TestFixture]
 public class UserUpdateRequestModelTests
 {
     private UserUpdateRequestModel _UserUpdateRequestModel;
