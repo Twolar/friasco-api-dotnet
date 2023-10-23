@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using friasco_api.Controllers;
+using friasco_api.Models;
 
 namespace friasco_api_unit_tests.Controllers;
 
@@ -34,12 +35,14 @@ public class UsersControllerTests
 
     [Test]
     public async Task Create_ReturnsOkResult() {
-        var result = await _controller.Create();
+        var model = new UserCreateRequest();
+        var result = await _controller.Create(model);
         Assert.IsInstanceOf<OkResult>(result);
     }
 
     public async Task Update_ReturnsOkResult() {
-        var result = await _controller.Update(1);
+        var model = new UserUpdateRequest();
+        var result = await _controller.Update(1, model);
         Assert.IsInstanceOf<OkResult>(result);
     }
 
