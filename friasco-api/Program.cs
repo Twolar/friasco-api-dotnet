@@ -1,9 +1,11 @@
 using friasco_api.Data;
+using friasco_api.Data.Repositories;
 using Microsoft.Data.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Database connection string + Add DataContext + Inject connection method into DataContext constructor
 var connectionString = builder.Configuration.GetConnectionString("FriascoDatabase");
