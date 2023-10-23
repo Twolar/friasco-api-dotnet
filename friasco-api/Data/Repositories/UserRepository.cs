@@ -14,33 +14,104 @@ public interface IUserRepository
 
 public class UserRepository : IUserRepository
 {
-    public Task Create(User user)
+    private IDataContext _dataContext;
+    private IDapperWrapper _dapperWrapper;
+    public UserRepository(IDataContext dataContext, IDapperWrapper dapperWrapper)
     {
-        throw new NotImplementedException();
+        _dataContext = dataContext;
+        _dapperWrapper = dapperWrapper;
     }
 
-    public Task Delete(int id)
+    public async Task<IEnumerable<User>> GetAll()
     {
-        throw new NotImplementedException();
+        using (var connection = _dataContext.CreateConnection())
+        {
+            var sql = @"
+                SELECT * FROM Users
+            ";
+            return await _dapperWrapper.QueryAsync<User>(connection, sql);
+        }
     }
 
-    public Task<IEnumerable<User>> GetAll()
+    public async Task<User> GetById(int id)
     {
-        throw new NotImplementedException();
+        using (var connection = _dataContext.CreateConnection())
+        {
+            var sql = @"
+                SELECT * FROM Users
+                WHERE id = @id
+            ";
+            return await _dapperWrapper.QueryFirstOrDefaultAsync<User>(connection, sql, id);
+        }
     }
 
-    public Task<User> GetByEmail(string email)
+    public async Task<User> GetByEmail(string email)
     {
-        throw new NotImplementedException();
+        using (var connection = _dataContext.CreateConnection())
+        {
+            var sql = @"
+                SELECT * FROM Users
+                WHERE Email = @email
+            ";
+            return await _dapperWrapper.QueryFirstOrDefaultAsync<User>(connection, sql, email);
+        }
     }
 
-    public Task<User> GetById(int id)
+    public async Task Create(User user)
     {
-        throw new NotImplementedException();
+        using (var connection = _dataContext.CreateConnection())
+        {
+            var sql = @"
+                INSERT INTO Users 
+                (
+                    Username,
+                    FirstName,
+                    LastName,
+                    Email,
+                    Role,
+                    PasswordHash
+                )
+                VALUES 
+                (
+                    @Username,
+                    @FirstName,
+                    @LastName,
+                    @Email,
+                    @Role,
+                    @PasswordHash
+                )
+            ";
+            await _dapperWrapper.ExecuteAsync(connection, sql, user);
+        }
     }
 
-    public Task Update(User user)
+    public async Task Update(User user)
     {
-        throw new NotImplementedException();
+        using (var connection = _dataContext.CreateConnection())
+        {
+            var sql = @"
+                UPDATE Users 
+                SET Title = @Title,
+                    FirstName = @FirstName,
+                    LastName = @LastName, 
+                    Email = @Email, 
+                    Role = @Role, 
+                    PasswordHash = @PasswordHash
+                WHERE Id = @Id
+            ";
+            await _dapperWrapper.ExecuteAsync(connection, sql, user);
+        }
+    }
+
+    public async Task Delete(int id)
+    {
+        using (var connection = _dataContext.CreateConnection())
+        {
+            var sql = @"
+                DELETE FROM Users 
+                WHERE Id = @id
+            ";
+            await _dapperWrapper.ExecuteAsync(connection, sql, id);
+        }
     }
 }

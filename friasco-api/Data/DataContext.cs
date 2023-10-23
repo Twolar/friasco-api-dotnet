@@ -6,6 +6,7 @@ namespace friasco_api.Data;
 public interface IDataContext
 {
     Task InitDatabase();
+    IDbConnection CreateConnection();
 }
 
 public class DataContext : IDataContext
@@ -15,6 +16,11 @@ public class DataContext : IDataContext
     public DataContext(Func<IDbConnection> dbConnectionFunc)
     {
         _dbConnectionFunc = dbConnectionFunc;
+    }
+
+    public IDbConnection CreateConnection()
+    {
+        return _dbConnectionFunc.Invoke();
     }
 
     public async Task InitDatabase()
