@@ -35,13 +35,13 @@ public class UsersControllerTests
 
     [Test]
     public async Task Create_ReturnsOkResult() {
-        var model = new UserCreateRequest();
+        var model = new UserCreateRequestModel();
         var result = await _controller.Create(model);
         Assert.IsInstanceOf<OkResult>(result);
     }
 
     public async Task Update_ReturnsOkResult() {
-        var model = new UserUpdateRequest();
+        var model = new UserUpdateRequestModel();
         var result = await _controller.Update(1, model);
         Assert.IsInstanceOf<OkResult>(result);
     }

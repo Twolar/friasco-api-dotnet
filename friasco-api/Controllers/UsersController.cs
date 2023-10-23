@@ -29,14 +29,14 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(UserCreateRequest model)
+    public async Task<IActionResult> Create(UserCreateRequestModel model)
     {
         _logger.Log(LogLevel.Debug, "Create");
         return Ok();
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, UserUpdateRequest model)
+    public async Task<IActionResult> Update(int id, UserUpdateRequestModel model)
     {
         _logger.LogDebug($"Updating {id}");
         return Ok();

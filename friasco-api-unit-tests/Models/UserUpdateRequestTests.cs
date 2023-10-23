@@ -2,14 +2,14 @@
 
 namespace friasco_api_unit_tests.Models;
 
-public class UserUpdateRequestTests
+public class UserUpdateRequestModelTests
 {
-    private UserUpdateRequest _userUpdateRequest;
+    private UserUpdateRequestModel _UserUpdateRequestModel;
 
     [SetUp]
     public void Setup()
     {
-        _userUpdateRequest = new UserUpdateRequest();
+        _UserUpdateRequestModel = new UserUpdateRequestModel();
     }
 
     [Test]
@@ -17,9 +17,9 @@ public class UserUpdateRequestTests
     {
         string value = "";
 
-        _userUpdateRequest.Password = value;
+        _UserUpdateRequestModel.Password = value;
 
-        Assert.That(_userUpdateRequest.Password, Is.Null);
+        Assert.That(_UserUpdateRequestModel.Password, Is.Null);
     }
 
     [Test]
@@ -27,9 +27,9 @@ public class UserUpdateRequestTests
     {
         string value = "password123";
 
-        _userUpdateRequest.Password = value;
+        _UserUpdateRequestModel.Password = value;
 
-        Assert.That(_userUpdateRequest.Password, Is.EqualTo(value));
+        Assert.That(_UserUpdateRequestModel.Password, Is.EqualTo(value));
     }
 
     [Test]
@@ -37,9 +37,9 @@ public class UserUpdateRequestTests
     {
         string value = "";
 
-        _userUpdateRequest.ConfirmPassword = value;
+        _UserUpdateRequestModel.ConfirmPassword = value;
 
-        Assert.That(_userUpdateRequest.ConfirmPassword, Is.Null);
+        Assert.That(_UserUpdateRequestModel.ConfirmPassword, Is.Null);
     }
 
     [Test]
@@ -47,9 +47,9 @@ public class UserUpdateRequestTests
     {
         string value = "password123";
 
-        _userUpdateRequest.ConfirmPassword = value;
+        _UserUpdateRequestModel.ConfirmPassword = value;
 
-        Assert.That(_userUpdateRequest.ConfirmPassword, Is.EqualTo(value));
+        Assert.That(_UserUpdateRequestModel.ConfirmPassword, Is.EqualTo(value));
     }
 
 }

@@ -3,7 +3,7 @@ using friasco_api.Enums;
 
 namespace friasco_api.Models;
 
-public class UserUpdateRequest
+public class UserUpdateRequestModel
 {
     public string? Username { get; set; }
 
