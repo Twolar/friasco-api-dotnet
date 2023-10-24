@@ -3,6 +3,7 @@ using friasco_api.Data;
 using friasco_api.Data.Entities;
 using friasco_api.Data.Repositories;
 using friasco_api.Enums;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace friasco_api_unit_tests.Data.Repositories;
@@ -10,6 +11,7 @@ namespace friasco_api_unit_tests.Data.Repositories;
 [TestFixture]
 public class UserRespositoryTests
 {
+    private Mock<ILogger<IUserRepository>> _loggerMock;
     private Mock<IDapperWrapper> _mockDapperWrapper;
     private Mock<IDataContext> _mockDataContext;
     private IUserRepository _userRepository;
@@ -17,9 +19,10 @@ public class UserRespositoryTests
     [SetUp]
     public void SetUp()
     {
+        _loggerMock = new Mock<ILogger<IUserRepository>>();
         _mockDataContext = new Mock<IDataContext>();
         _mockDapperWrapper = new Mock<IDapperWrapper>();
-        _userRepository = new UserRepository(_mockDataContext.Object, _mockDapperWrapper.Object);
+        _userRepository = new UserRepository(_loggerMock.Object, _mockDataContext.Object, _mockDapperWrapper.Object);
     }
 
     [Test]
