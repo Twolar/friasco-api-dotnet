@@ -1,4 +1,5 @@
 ﻿using friasco_api.Models;
+using friasco_api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace friasco_api.Controllers;
@@ -8,10 +9,12 @@ namespace friasco_api.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly ILogger<UsersController> _logger;
+    private readonly IUserService _userService;
 
-    public UsersController(ILogger<UsersController> logger)
+    public UsersController(ILogger<UsersController> logger, IUserService userService)
     {
         _logger = logger;
+        _userService = userService;
     }
 
     [HttpGet]
