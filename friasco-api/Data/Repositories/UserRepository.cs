@@ -7,9 +7,9 @@ public interface IUserRepository
     Task<IEnumerable<User>> GetAll();
     Task<User> GetById(int id);
     Task<User> GetByEmail(string email);
-    Task Create(User user);
-    Task Update(User user);
-    Task Delete(int id);
+    Task<int> Create(User user);
+    Task<int> Update(User user);
+    Task<int> Delete(int id);
 }
 
 public class UserRepository : IUserRepository
@@ -57,7 +57,7 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task Create(User user)
+    public async Task<int> Create(User user)
     {
         using (var connection = _dataContext.CreateConnection())
         {
@@ -81,11 +81,11 @@ public class UserRepository : IUserRepository
                     @PasswordHash
                 )
             ";
-            await _dapperWrapper.ExecuteAsync(connection, sql, user);
+            return await _dapperWrapper.ExecuteAsync(connection, sql, user);
         }
     }
 
-    public async Task Update(User user)
+    public async Task<int> Update(User user)
     {
         using (var connection = _dataContext.CreateConnection())
         {
@@ -99,11 +99,11 @@ public class UserRepository : IUserRepository
                     PasswordHash = @PasswordHash
                 WHERE Id = @Id
             ";
-            await _dapperWrapper.ExecuteAsync(connection, sql, user);
+            return await _dapperWrapper.ExecuteAsync(connection, sql, user);
         }
     }
 
-    public async Task Delete(int id)
+    public async Task<int> Delete(int id)
     {
         using (var connection = _dataContext.CreateConnection())
         {
@@ -111,7 +111,7 @@ public class UserRepository : IUserRepository
                 DELETE FROM Users 
                 WHERE Id = @id
             ";
-            await _dapperWrapper.ExecuteAsync(connection, sql, id);
+            return await _dapperWrapper.ExecuteAsync(connection, sql, id);
         }
     }
 }
