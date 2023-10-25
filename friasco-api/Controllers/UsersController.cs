@@ -21,34 +21,55 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         _logger.LogDebug("UsersController::GetAll");
-        return Ok();
+
+        var users = _userService.GetAll();
+
+        return Ok(users);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
         _logger.LogDebug($"UsersController::GetById id: {id}");
-        return Ok();
+
+        var user = _userService.GetById(id);
+
+        return Ok(user);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(UserCreateRequestModel model)
     {
         _logger.Log(LogLevel.Debug, "UsersController::Create");
-        return Ok();
+
+        await _userService.Create(model);
+
+        return Ok(
+            new { message = "User Created" }
+        );
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, UserUpdateRequestModel model)
     {
         _logger.LogDebug($"UsersController::Update id: {id}");
-        return Ok();
+
+        await _userService.Update(id, model);
+
+        return Ok(
+            new { message = "User Updated" }
+        );
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         _logger.LogDebug($"UsersController::Delete id: {id}");
-        return Ok();
+
+        await _userService.Delete(id);
+
+        return Ok(
+            new { message = "User Deleted" }
+        );
     }
 }

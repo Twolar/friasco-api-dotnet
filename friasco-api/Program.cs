@@ -1,5 +1,6 @@
 using friasco_api.Data;
 using friasco_api.Data.Repositories;
+using friasco_api.Helpers;
 using friasco_api.Services;
 using Microsoft.Data.Sqlite;
 
@@ -9,6 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IDapperWrapper, DapperWrapper>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+// AutoMapper Profiles
+builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
 
 // Database connection string + Add DataContext + Inject connection method into DataContext constructor
 var connectionString = builder.Configuration.GetConnectionString("FriascoDatabase");

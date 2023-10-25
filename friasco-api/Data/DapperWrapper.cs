@@ -10,9 +10,7 @@ public interface IDapperWrapper
 {
     Task<IEnumerable<T>> QueryAsync<T>(IDbConnection connection, string sql);
     Task<T> QueryFirstOrDefaultAsync<T>(IDbConnection connection, string sql);
-    Task<T> QueryFirstOrDefaultAsync<T>(IDbConnection connection, string sql, int id);
-    Task<T> QueryFirstOrDefaultAsync<T>(IDbConnection connection, string sql, string value);
-    Task<int> ExecuteAsync(IDbConnection connection, string sql, int id);
+    Task<T> QueryFirstOrDefaultAsync<T>(IDbConnection connection, string sql, object param = null);
     Task<int> ExecuteAsync(IDbConnection connection, string sql, object param = null);
 }
 
@@ -28,19 +26,9 @@ public class DapperWrapper : IDapperWrapper
         return await connection.QueryFirstOrDefaultAsync<T>(sql);
     }
 
-    public async Task<T> QueryFirstOrDefaultAsync<T>(IDbConnection connection, string sql, int id)
+    public async Task<T> QueryFirstOrDefaultAsync<T>(IDbConnection connection, string sql, object param = null)
     {
-        return await connection.QueryFirstOrDefaultAsync<T>(sql, new { id });
-    }
-
-    public async Task<T> QueryFirstOrDefaultAsync<T>(IDbConnection connection, string sql, string value)
-    {
-        return await connection.QueryFirstOrDefaultAsync<T>(sql, new { value });
-    }
-
-    public async Task<int> ExecuteAsync(IDbConnection connection, string sql, int id)
-    {
-        return await connection.ExecuteAsync(sql, new { id });
+        return await connection.QueryFirstOrDefaultAsync<T>(sql, param);
     }
 
     public async Task<int> ExecuteAsync(IDbConnection connection, string sql, object param = null)

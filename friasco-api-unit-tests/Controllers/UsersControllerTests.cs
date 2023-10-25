@@ -26,14 +26,14 @@ public class UsersControllerTests
     public async Task GetAll_ReturnsOkResult()
     {
         var result = await _controller.GetAll();
-        Assert.IsInstanceOf<OkResult>(result);
+        Assert.IsInstanceOf<OkObjectResult>(result);
     }
 
     [Test]
     public async Task GetById_ReturnsOkResult()
     {
         var result = await _controller.GetById(1);
-        Assert.IsInstanceOf<OkResult>(result);
+        Assert.IsInstanceOf<OkObjectResult>(result);
     }
 
     [Test]
@@ -41,7 +41,7 @@ public class UsersControllerTests
     {
         var model = new UserCreateRequestModel();
         var result = await _controller.Create(model);
-        Assert.IsInstanceOf<OkResult>(result);
+        Assert.IsInstanceOf<OkObjectResult>(result);
     }
 
     public async Task Update_ReturnsOkResult()

@@ -1,5 +1,7 @@
-﻿using friasco_api.Data.Entities;
+﻿using AutoMapper;
+using friasco_api.Data.Entities;
 using friasco_api.Data.Repositories;
+using friasco_api.Helpers;
 using friasco_api.Models;
 
 namespace friasco_api.Services;
@@ -16,11 +18,13 @@ public interface IUserService
 public class UserService : IUserService
 {
     private readonly ILogger<IUserService> _logger;
+    private readonly IMapper _mapper;
     private IUserRepository _userRepository;
 
-    public UserService(ILogger<IUserService> logger, IUserRepository userRepository)
+    public UserService(ILogger<IUserService> logger, IMapper mapper, IUserRepository userRepository)
     {
         _logger = logger;
+        _mapper = mapper;
         _userRepository = userRepository;
     }
 
@@ -48,28 +52,60 @@ public class UserService : IUserService
     {
         _logger.Log(LogLevel.Debug, "UserService::Create");
 
-        // TODO: Verify Duplicate Email
-        // TODO: Map Request Model to Data Model
-        // TODO: Password Hashing
+        if (await _userRepository.GetByEmail(model.Email!) != null)
+        {
+            // TODO: Maybe something to look at if it gets to the point where there are too many...
+            throw new DuplicateEmailException($"User with the email: {model.Email} already exists");
+        }
 
-        throw new NotImplementedException();
+        var user = _mapper.Map<User>(model);
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+
+        var rowsAffectedResult = await _userRepository.Create(user);
+
+        return rowsAffectedResult;
     }
 
     public async Task<int> Update(int id, UserUpdateRequestModel model)
     {
         _logger.LogDebug($"UserService::Update id: {id}");
 
-        // TODO: User exists
-        // TODO: Validate if email is an incoming change
-        // TODO: Validate if password is an incoming change / Hash it
-        // TODO: Model mapping
+        var user = await _userRepository.GetById(id);
 
-        throw new NotImplementedException();
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"User with id: {id} not found");
+        }
+
+        if (!string.IsNullOrEmpty(model.Email))
+        {
+            // Check if new email already exists
+            if ((model.Email != user.Email) && await _userRepository.GetByEmail(model.Email) != null)
+            {
+                throw new DuplicateEmailException($"User with the email: {model.Email} already exists");
+            }
+
+        }
+
+        if (!string.IsNullOrEmpty(model.Password))
+        {
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+        }
+
+        _mapper.Map(model, user);
+
+        var rowsAffectedResult = await _userRepository.Update(user);
+
+        return rowsAffectedResult;
     }
 
     public async Task<int> Delete(int id)
     {
         _logger.LogDebug($"UserService::Delete id: {id}");
-        return await _userRepository.Delete(id);
+
+        var rowsAffectedResult = await _userRepository.Delete(id);
+
+        return rowsAffectedResult;
     }
 }

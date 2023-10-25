@@ -45,7 +45,7 @@ public class UserRepository : IUserRepository
                 SELECT * FROM Users
                 WHERE id = @id
             ";
-            return await _dapperWrapper.QueryFirstOrDefaultAsync<User>(connection, sql, id);
+            return await _dapperWrapper.QueryFirstOrDefaultAsync<User>(connection, sql, new { id });
         }
     }
 
@@ -58,7 +58,7 @@ public class UserRepository : IUserRepository
                 SELECT * FROM Users
                 WHERE Email = @email
             ";
-            return await _dapperWrapper.QueryFirstOrDefaultAsync<User>(connection, sql, email);
+            return await _dapperWrapper.QueryFirstOrDefaultAsync<User>(connection, sql, new { email });
         }
     }
 
@@ -98,7 +98,7 @@ public class UserRepository : IUserRepository
         {
             var sql = @"
                 UPDATE Users 
-                SET Title = @Title,
+                SET Username = @Username,
                     FirstName = @FirstName,
                     LastName = @LastName, 
                     Email = @Email, 
@@ -119,7 +119,7 @@ public class UserRepository : IUserRepository
                 DELETE FROM Users 
                 WHERE Id = @id
             ";
-            return await _dapperWrapper.ExecuteAsync(connection, sql, id);
+            return await _dapperWrapper.ExecuteAsync(connection, sql, new { id });
         }
     }
 }

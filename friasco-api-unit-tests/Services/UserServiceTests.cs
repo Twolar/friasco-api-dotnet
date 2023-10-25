@@ -1,6 +1,8 @@
-﻿using friasco_api.Data.Entities;
+﻿using AutoMapper;
+using friasco_api.Data.Entities;
 using friasco_api.Data.Repositories;
 using friasco_api.Enums;
+using friasco_api.Helpers;
 using friasco_api.Models;
 using friasco_api.Services;
 using Microsoft.Extensions.Logging;
@@ -12,6 +14,7 @@ namespace friasco_api_unit_tests.Services;
 public class UserServiceTests
 {
     private Mock<ILogger<IUserService>> _loggerMock;
+    private Mock<IMapper> _mapperMock;
     private Mock<IUserRepository> _userRepositoryMock;
     private IUserService _userService;
 
@@ -20,7 +23,8 @@ public class UserServiceTests
     {
         _loggerMock = new Mock<ILogger<IUserService>>();
         _userRepositoryMock = new Mock<IUserRepository>();
-        _userService = new UserService(_loggerMock.Object, _userRepositoryMock.Object);
+        _mapperMock = new Mock<IMapper>();
+        _userService = new UserService(_loggerMock.Object, _mapperMock.Object, _userRepositoryMock.Object);
     }
 
     [Test]
@@ -55,14 +59,15 @@ public class UserServiceTests
     [Test]
     public async Task Create_CreatesUser_ReturnsOneRowAffected()
     {
-        Assert.Fail("TODO: Basic scaffold, not complete yet...");
         var userCreateRequestModel = new UserCreateRequestModel
         {
             Username = "User1",
             Email = "user1@example.com",
             FirstName = "user1First",
             LastName = "user1Last",
-            Role = UserRoleEnum.User
+            Role = UserRoleEnum.User,
+            Password = "password123",
+            ConfirmPassword = "password123"
         };
         var userToCreate = new User
         {
@@ -71,27 +76,61 @@ public class UserServiceTests
             Email = userCreateRequestModel.Email,
             FirstName = userCreateRequestModel.FirstName,
             LastName = userCreateRequestModel.LastName,
-            Role = userCreateRequestModel.Role
+            Role = userCreateRequestModel.Role,
         };
+
+        _userRepositoryMock.Setup(x => x.GetByEmail(userCreateRequestModel.Email)).ReturnsAsync((User)null);
         _userRepositoryMock.Setup(x => x.Create(userToCreate)).ReturnsAsync(1);
+        _mapperMock.Setup(x => x.Map<User>(userCreateRequestModel)).Returns(userToCreate);
 
         var rowsAffected = await _userService.Create(userCreateRequestModel);
 
         Assert.That(rowsAffected, Is.EqualTo(1));
-        _userRepositoryMock.Verify(x => x.Create(userToCreate), Times.Once());
+
+        _userRepositoryMock.Verify(x => x.GetByEmail(It.IsAny<string>()), Times.Once());
+        _mapperMock.Verify(x => x.Map<User>(It.IsAny<UserCreateRequestModel>()), Times.Once);
+        _userRepositoryMock.Verify(x => x.Create(It.IsAny<User>()), Times.Once());
     }
 
     [Test]
-    public async Task Update_UpdatesUser_ReturnsOneRowAffected()
+    public async Task Create_ThrowsExceptionIfDuplicateEmailExists()
     {
-        Assert.Fail("TODO: Basic scaffold, not complete yet...");
-        var userUpdateRequestModel = new UserCreateRequestModel
+        var userCreateRequestModel = new UserCreateRequestModel
         {
             Username = "User1",
             Email = "user1@example.com",
             FirstName = "user1First",
             LastName = "user1Last",
-            Role = UserRoleEnum.User
+            Role = UserRoleEnum.User,
+            Password = "password123",
+            ConfirmPassword = "password123"
+        };
+        var existingUser = new User
+        {
+            Id = 1,
+            Email = userCreateRequestModel.Email,
+        };
+
+        _userRepositoryMock.Setup(x => x.GetByEmail(userCreateRequestModel.Email)).ReturnsAsync(existingUser);
+
+        var exception = Assert.ThrowsAsync<DuplicateEmailException>(async () => await _userService.Create(userCreateRequestModel));
+        Assert.That(exception.Message, Is.EqualTo($"User with the email: {userCreateRequestModel.Email} already exists"));
+
+        _userRepositoryMock.Verify(x => x.GetByEmail(It.IsAny<string>()), Times.Once());
+    }
+
+    [Test]
+    public async Task Update_UpdatesUser_ReturnsOneRowAffected()
+    {
+        var userUpdateRequestModel = new UserUpdateRequestModel
+        {
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Password = "password123",
+            ConfirmPassword = "password123"
         };
         var userToUpdate = new User
         {
@@ -102,13 +141,83 @@ public class UserServiceTests
             LastName = userUpdateRequestModel.LastName,
             Role = userUpdateRequestModel.Role
         };
-        _userRepositoryMock.Setup(x => x.Update(userToUpdate)).ReturnsAsync(1);
 
-        var rowsAffected = await _userService.Create(userUpdateRequestModel);
+        _userRepositoryMock.Setup(x => x.GetById(userToUpdate.Id)).ReturnsAsync(userToUpdate);
+        _userRepositoryMock.Setup(x => x.Update(userToUpdate)).ReturnsAsync(1);
+        _mapperMock.Setup(x => x.Map(userUpdateRequestModel, userToUpdate)).Returns(userToUpdate);
+
+        var rowsAffected = await _userService.Update(userToUpdate.Id, userUpdateRequestModel);
 
         Assert.That(rowsAffected, Is.EqualTo(1));
-        _userRepositoryMock.Verify(x => x.Create(userToUpdate), Times.Once());
+
+        _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
+        _userRepositoryMock.Verify(x => x.Update(It.IsAny<User>()), Times.Once());
     }
+
+    [Test]
+    public async Task Update_ThrowsExceptionIfUserDoesNotExistAlready()
+    {
+        var userUpdateRequestModel = new UserUpdateRequestModel
+        {
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Password = "password123",
+            ConfirmPassword = "password123"
+        };
+        var userToUpdate = new User
+        {
+            Id = 1,
+            Username = userUpdateRequestModel.Username,
+            Email = "user2@example.com",
+            FirstName = userUpdateRequestModel.FirstName,
+            LastName = userUpdateRequestModel.LastName,
+            Role = userUpdateRequestModel.Role
+        };
+        var userExistingWithSameEmail = new User
+        {
+            Id = 2,
+            Email = userUpdateRequestModel.Email,
+        };
+
+        _userRepositoryMock.Setup(x => x.GetById(userToUpdate.Id)).ReturnsAsync(userToUpdate);
+        _userRepositoryMock.Setup(x => x.GetByEmail(userUpdateRequestModel.Email)).ReturnsAsync(userExistingWithSameEmail);
+
+        var exception = Assert.ThrowsAsync<DuplicateEmailException>(async () => await _userService.Update(userToUpdate.Id, userUpdateRequestModel));
+        Assert.That(exception.Message, Is.EqualTo($"User with the email: {userUpdateRequestModel.Email} already exists"));
+
+        _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
+        _userRepositoryMock.Verify(x => x.GetByEmail(It.IsAny<string>()), Times.Once());
+    }
+
+    [Test]
+    public async Task Update_ThrowsExceptionUserModelEmailAlreadyExists()
+    {
+        var userUpdateRequestModel = new UserUpdateRequestModel
+        {
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Password = "password123",
+            ConfirmPassword = "password123"
+        };
+        var userToUpdate = new User
+        {
+            Id = 1,
+        };
+
+        _userRepositoryMock.Setup(x => x.GetById(userToUpdate.Id)).ReturnsAsync((User)null);
+
+        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.Update(userToUpdate.Id, userUpdateRequestModel));
+        Assert.That(exception.Message, Is.EqualTo($"User with id: {userToUpdate.Id} not found"));
+
+        _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
+    }
+
 
     [Test]
     public async Task Delete_DeletesUser_ReturnsOneRowAffected()
