@@ -1,0 +1,45 @@
+{
+  "result": [
+    {
+      "id": 1,
+      "username": "User1",
+      "firstName": "user1First",
+      "lastName": "user1Last",
+      "email": "user1@example.com",
+      "role": 1
+    },
+    {
+      "id": 2,
+      "username": "User1",
+      "firstName": "user1First",
+      "lastName": "user1Last",
+      "email": "user342432@example.com",
+      "role": 1
+    },
+    {
+      "id": 3,
+      "username": "intUser1",
+      "firstName": "intuser1First",
+      "lastName": "intuser1Last",
+      "email": "int@example.com",
+      "role": 1
+    },
+    {
+      "id": 4,
+      "username": "intUser1",
+      "firstName": "intuser1First",
+      "lastName": "intuser1Last",
+      "email": "user@example.com",
+      "role": 1
+    }
+  ],
+  "id": 1,
+  "exception": null,
+  "status": 5,
+  "isCanceled": false,
+  "isCompleted": true,
+  "isCompletedSuccessfully": true,
+  "creationOptions": 0,
+  "asyncState": null,
+  "isFaulted": false
+}
