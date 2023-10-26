@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "friasco-api", "friasco-api\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "friasco-api-unit-tests", "friasco-api-unit-tests\friasco-api-unit-tests.csproj", "{D49FA305-44D1-4F8A-84D7-F36FF0E79881}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "friasco-api-integration-tests", "friasco-api-integration-tests\friasco-api-integration-tests.csproj", "{4BFF106B-3522-4237-84A2-0F75F9A4BAA7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D49FA305-44D1-4F8A-84D7-F36FF0E79881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D49FA305-44D1-4F8A-84D7-F36FF0E79881}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D49FA305-44D1-4F8A-84D7-F36FF0E79881}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BFF106B-3522-4237-84A2-0F75F9A4BAA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BFF106B-3522-4237-84A2-0F75F9A4BAA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BFF106B-3522-4237-84A2-0F75F9A4BAA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BFF106B-3522-4237-84A2-0F75F9A4BAA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
