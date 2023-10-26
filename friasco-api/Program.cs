@@ -29,8 +29,8 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Ensure database and tables exist
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
     await context.InitDatabase();
 }
