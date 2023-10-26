@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using System.Text.Json;
 using friasco_api.Enums;
 using friasco_api.Models;
@@ -23,8 +24,6 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task FirstTestExample()
     {
-        var client = await GetHttpClientAsync();
-
         try
         {
             var userCreateRequestModel = new UserCreateRequestModel
@@ -40,11 +39,14 @@ public class UserEndpointTests : IntegrationTestBase
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateRequestModel), Encoding.UTF8, "application/json");
 
-            await client.PostAsync("/users", jsonContent);
+            await Client.PostAsync("/users", jsonContent);
 
-            var response = await client.GetAsync("/users");
+            var response = await Client.GetAsync("/users");
 
             var users = response.Content.ReadAsStringAsync();
+
+            // TODO: Fix, as this running duplicate entry is still returning okay, need to assert user is created...
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
         finally
         {
