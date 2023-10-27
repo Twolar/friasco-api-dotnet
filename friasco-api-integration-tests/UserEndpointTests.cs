@@ -1,9 +1,8 @@
-﻿using System.Data;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using System.Text.Json;
+using friasco_api.Data.Entities;
 using friasco_api.Enums;
-using friasco_api.Models;
 
 namespace friasco_api_integration_tests;
 
@@ -11,54 +10,45 @@ namespace friasco_api_integration_tests;
 public class UserEndpointTests : IntegrationTestBase
 {
     [Test]
-    public async Task FirstTestExample()
+    public async Task User_Post_SucceedsWith_OkResponseReturned()
     {
-        var userCreateRequestModel = new UserCreateRequestModel
+        User? userInDb = null;
+
+        try
         {
-            Username = "notInDbUser1",
-            Email = "notInDbUser@example.com",
-            FirstName = "notInDbUser1First",
-            LastName = "notInDbUser1Last",
-            Role = UserRoleEnum.User,
-            Password = "notInDbPassword123",
-            ConfirmPassword = "notInDbPassword123"
-        };
+            var userCreateJsonObject = new
+            {
+                Username = "User1",
+                Email = "User1@example.com",
+                FirstName = "User1First",
+                LastName = "User1Last",
+                Role = UserRoleEnum.User,
+                Password = "Password123",
+                ConfirmPassword = "Password123"
+            };
 
-        var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateRequestModel), Encoding.UTF8, "application/json");
+            var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-        await Client.PostAsync("/users", jsonContent);
+            var response = await Client.PostAsync("/users", jsonContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
-        var response = await Client.GetAsync("/users");
+            userInDb = await DbUserGetByEmail(userCreateJsonObject.Email);
 
-        var users = response.Content.ReadAsStringAsync();
-
-        // TODO: Fix, as this running duplicate entry is still returning okay, need to assert user is created...
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-    }
-
-    [Test]
-    public async Task FirstTestExampleDuplicated()
-    {
-        var userCreateRequestModel = new UserCreateRequestModel
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+            Assert.That(userInDb.Username, Is.EqualTo(userCreateJsonObject.Username));
+            Assert.That(userInDb.Email, Is.EqualTo(userCreateJsonObject.Email));
+            Assert.That(userInDb.FirstName, Is.EqualTo(userCreateJsonObject.FirstName));
+            Assert.That(userInDb.LastName, Is.EqualTo(userCreateJsonObject.LastName));
+            Assert.That(userInDb.Role, Is.EqualTo(userCreateJsonObject.Role));
+            Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(null));
+        }
+        finally
         {
-            Username = "notInDbUser1",
-            Email = "notInDbUser@example.com",
-            FirstName = "notInDbUser1First",
-            LastName = "notInDbUser1Last",
-            Role = UserRoleEnum.User,
-            Password = "notInDbPassword123",
-            ConfirmPassword = "notInDbPassword123"
-        };
-
-        var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateRequestModel), Encoding.UTF8, "application/json");
-
-        await Client.PostAsync("/users", jsonContent);
-
-        var response = await Client.GetAsync("/users");
-
-        var users = response.Content.ReadAsStringAsync();
-
-        // TODO: Fix, as this running duplicate entry is still returning okay, need to assert user is created...
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            if (userInDb != null)
+            {
+                await DbUserDeleteById(userInDb.Id);
+            }
+        }
     }
 }

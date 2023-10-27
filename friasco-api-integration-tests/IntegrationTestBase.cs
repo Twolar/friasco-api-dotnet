@@ -1,5 +1,7 @@
 ﻿using System.Data;
+using Dapper;
 using friasco_api.Data;
+using friasco_api.Data.Entities;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,26 +58,79 @@ public class IntegrationTestBase
     [SetUp]
     public void SetUp()
     {
-        // TODO: The transactions are working but are slow, investigate performance improvement...
-
+        // TODO: Causing locks in SQLite, potentially revisit when migrated to different database
         // Open SQL Transaction
-        using (var scope = Factory.Services.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
-            var connection = context.CreateConnection();
-            connection.Open();
-            Transaction = connection.BeginTransaction();
-        }
+        // using (var scope = Factory.Services.CreateScope())
+        // {
+        //     var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
+        //     var connection = context.CreateConnection();
+        //     connection.Open();
+        //     Transaction = connection.BeginTransaction();
+        // }
     }
 
     [TearDown]
     public void TearDown()
     {
-        // Rollback SQL Transaction and clean up
-        if (Transaction != null) {
-            Transaction.Rollback();
-            Transaction.Dispose();
-            Transaction.Connection?.Dispose();
+        // TODO: Causing locks in SQLite, potentially revisit when migrated to different database
+        // // Rollback SQL Transaction and clean up
+        // if (Transaction != null)
+        // {
+        //     Transaction.Rollback();
+        //     Transaction.Dispose();
+        //     Transaction.Connection?.Dispose();
+        // }
+    }
+
+    #region Helpers
+
+    public async Task<User?> DbUserGetByEmail(string email)
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
+            var connection = context.CreateConnection();
+            connection.Open();
+
+            try
+            {
+                var sql = @"
+                    SELECT * FROM Users
+                    WHERE Email = @email
+                ";
+                return await connection.QueryFirstOrDefaultAsync<User>(sql, new { email });
+            }
+            finally
+            {
+                connection.Close();
+                connection.Dispose();
+            }
         }
     }
+
+    public async Task DbUserDeleteById(int id)
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
+            var connection = context.CreateConnection();
+            connection.Open();
+
+            try
+            {
+                var sql = @"
+                    DELETE FROM Users 
+                    WHERE Id = @id
+                ";
+                await connection.ExecuteAsync(sql, new { id });
+            }
+            finally
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+        }
+    }
+
+    #endregion
 }
