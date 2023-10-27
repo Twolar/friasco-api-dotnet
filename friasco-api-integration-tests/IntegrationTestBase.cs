@@ -84,6 +84,46 @@ public class IntegrationTestBase
 
     #region Helpers
 
+    public async Task<int> DbUserCreate(User user)
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
+            var connection = context.CreateConnection();
+            connection.Open();
+
+            try
+            {
+                var sql = @"
+                    INSERT INTO Users 
+                    (
+                        Username,
+                        FirstName,
+                        LastName,
+                        Email,
+                        Role,
+                        PasswordHash
+                    )
+                    VALUES 
+                    (
+                        @Username,
+                        @FirstName,
+                        @LastName,
+                        @Email,
+                        @Role,
+                        @PasswordHash
+                    )
+                ";
+                return await connection.ExecuteAsync(sql, user);
+            }
+            finally
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+        }
+    }
+
     public async Task<User?> DbUserGetByEmail(string email)
     {
         using (var scope = Factory.Services.CreateScope())
@@ -123,6 +163,30 @@ public class IntegrationTestBase
                     WHERE Id = @id
                 ";
                 await connection.ExecuteAsync(sql, new { id });
+            }
+            finally
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+        }
+    }
+
+    public async Task DbUserDeleteByEmail(string email)
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
+            var connection = context.CreateConnection();
+            connection.Open();
+
+            try
+            {
+                var sql = @"
+                    DELETE FROM Users 
+                    WHERE Email = @email
+                ";
+                await connection.QueryFirstOrDefaultAsync<User>(sql, new { email });
             }
             finally
             {

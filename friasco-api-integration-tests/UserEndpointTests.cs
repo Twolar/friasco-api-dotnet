@@ -10,6 +10,63 @@ namespace friasco_api_integration_tests;
 public class UserEndpointTests : IntegrationTestBase
 {
     [Test]
+    public async Task User_GetAll_Succeeds_OkResponseReturned()
+    {
+        var dbUserList = new List<User>() {
+            new User
+            {
+                Username = "User1",
+                Email = "User1@example.com",
+                FirstName = "User1First",
+                LastName = "User1Last",
+                Role = UserRoleEnum.User,
+                PasswordHash = "PasswordHash123",
+            },
+            new User
+            {
+                Username = "User2",
+                Email = "User2@example.com",
+                FirstName = "User2First",
+                LastName = "User2Last",
+                Role = UserRoleEnum.User,
+                PasswordHash = "PasswordHash123",
+            }
+        };
+
+        try
+        {
+            await DbUserCreate(dbUserList[0]);
+            await DbUserCreate(dbUserList[1]);
+
+            var response = await Client.GetAsync("/users");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            // TODO: Deserialize response, potentially look at changing response structure first...
+            // var apiUsers = JsonSerializer.Deserialize();
+
+            // Assert.That(apiUsers, Is.Not.EqualTo(null));
+
+            // for (var i = 0; i < dbUserList.Count; i++)
+            // {
+            //     Assert.That(apiUsers[i].Username, Is.EqualTo(dbUserList[i].Username));
+            //     Assert.That(apiUsers[i].Email, Is.EqualTo(dbUserList[i].Email));
+            //     Assert.That(apiUsers[i].FirstName, Is.EqualTo(dbUserList[i].FirstName));
+            //     Assert.That(apiUsers[i].LastName, Is.EqualTo(dbUserList[i].LastName));
+            //     Assert.That(apiUsers[i].Role, Is.EqualTo(dbUserList[i].Role));
+            // }
+        }
+        finally
+        {
+            await DbUserDeleteByEmail(dbUserList[1].Email);
+            await DbUserDeleteByEmail(dbUserList[0].Email);
+        }
+    }
+
+    [Test]
+    public async Task User_Get_Succeeds_OkResponseReturned() { }
+
+    [Test]
     public async Task User_Post_SucceedsWith_OkResponseReturned()
     {
         User? userInDb = null;
@@ -51,4 +108,10 @@ public class UserEndpointTests : IntegrationTestBase
             }
         }
     }
+
+    [Test]
+    public async Task User_Put_Succeeds_OkResponseReturned() { }
+
+    [Test]
+    public async Task User_Delete_Succeeds_OkResponseReturned() { }
 }
