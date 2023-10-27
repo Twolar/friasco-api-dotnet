@@ -10,7 +10,7 @@ namespace friasco_api_integration_tests;
 public class UserEndpointTests : IntegrationTestBase
 {
     [Test]
-    public async Task User_GetAll_Succeeds_OkResponseReturned()
+    public async Task Users_GetAll_Succeeds_WithMatchingDbValues()
     {
         var dbUserList = new List<User>() {
             new User
@@ -64,10 +64,10 @@ public class UserEndpointTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task User_Get_Succeeds_OkResponseReturned() { }
+    public async Task Users_Get_Succeeds_WithMatchingDbValues() { }
 
     [Test]
-    public async Task User_Post_SucceedsWith_OkResponseReturned()
+    public async Task Users_Create_Succeeds_WithMatchingDbValues()
     {
         User? userInDb = null;
 
@@ -110,8 +110,8 @@ public class UserEndpointTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task User_Put_Succeeds_OkResponseReturned() { }
+    public async Task Users_Update_Succeeds_WithMatchingDbValues() { }
 
     [Test]
-    public async Task User_Delete_Succeeds_OkResponseReturned() { }
+    public async Task Users_Delete_Succeeds_WithMatchingDbValues() { }
 }
