@@ -1,4 +1,5 @@
-﻿using friasco_api.Data;
+﻿using System.Data;
+using friasco_api.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,9 +11,10 @@ public class IntegrationTestBase
 {
     protected WebApplicationFactory<Program> Factory { get; private set; }
     protected HttpClient Client { get; private set; }
+    protected IDbTransaction? Transaction { get; private set; }
 
-    [SetUp]
-    public async Task SetUp()
+    [OneTimeSetUp]
+    public async Task OneTimeSetUp()
     {
         Factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -44,10 +46,36 @@ public class IntegrationTestBase
         }
     }
 
-    [TearDown]
-    public void TearDown()
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
     {
         Client.Dispose();
         Factory.Dispose();
+    }
+
+    [SetUp]
+    public void SetUp()
+    {
+        // TODO: The transactions are working but are slow, investigate performance improvement...
+
+        // Open SQL Transaction
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
+            var connection = context.CreateConnection();
+            connection.Open();
+            Transaction = connection.BeginTransaction();
+        }
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        // Rollback SQL Transaction and clean up
+        if (Transaction != null) {
+            Transaction.Rollback();
+            Transaction.Dispose();
+            Transaction.Connection?.Dispose();
+        }
     }
 }
