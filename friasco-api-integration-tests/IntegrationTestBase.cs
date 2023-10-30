@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Text.Json;
 using Dapper;
 using friasco_api.Data;
 using friasco_api.Data.Entities;
@@ -14,6 +15,10 @@ public class IntegrationTestBase
     protected WebApplicationFactory<Program> Factory { get; private set; }
     protected HttpClient Client { get; private set; }
     protected IDbTransaction? Transaction { get; private set; }
+    protected JsonSerializerOptions DefaultTestingJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+    {
+        PropertyNameCaseInsensitive = false
+    };
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
@@ -83,6 +88,14 @@ public class IntegrationTestBase
     }
 
     #region Helpers
+
+    public async Task<string> GetResponseResultObjectAsString(HttpResponseMessage response)
+    {
+        string responseContent = await response.Content.ReadAsStringAsync();
+        using JsonDocument jsonDocument = JsonDocument.Parse(responseContent);
+        JsonElement resultJsonElement = jsonDocument.RootElement.GetProperty("result");
+        return resultJsonElement.GetRawText();
+    }
 
     public async Task<int> DbUserCreate(User user)
     {

@@ -42,19 +42,20 @@ public class UserEndpointTests : IntegrationTestBase
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
-            // TODO: Deserialize response, potentially look at changing response structure first...
-            // var apiUsers = JsonSerializer.Deserialize();
+            var resultJsonString = await GetResponseResultObjectAsString(response);
+            List<User> apiUsers = JsonSerializer.Deserialize<List<User>>(resultJsonString, DefaultTestingJsonSerializerOptions);
 
-            // Assert.That(apiUsers, Is.Not.EqualTo(null));
+            Assert.That(apiUsers?.Count, Is.AtLeast(2));
 
-            // for (var i = 0; i < dbUserList.Count; i++)
-            // {
-            //     Assert.That(apiUsers[i].Username, Is.EqualTo(dbUserList[i].Username));
-            //     Assert.That(apiUsers[i].Email, Is.EqualTo(dbUserList[i].Email));
-            //     Assert.That(apiUsers[i].FirstName, Is.EqualTo(dbUserList[i].FirstName));
-            //     Assert.That(apiUsers[i].LastName, Is.EqualTo(dbUserList[i].LastName));
-            //     Assert.That(apiUsers[i].Role, Is.EqualTo(dbUserList[i].Role));
-            // }
+            for (var i = 0; i < dbUserList.Count; i++)
+            {
+                Assert.That(apiUsers[i].Username, Is.EqualTo(dbUserList[i].Username));
+                Assert.That(apiUsers[i].Email, Is.EqualTo(dbUserList[i].Email));
+                Assert.That(apiUsers[i].FirstName, Is.EqualTo(dbUserList[i].FirstName));
+                Assert.That(apiUsers[i].LastName, Is.EqualTo(dbUserList[i].LastName));
+                Assert.That(apiUsers[i].Role, Is.EqualTo(dbUserList[i].Role));
+                Assert.That(apiUsers[i].PasswordHash, Is.EqualTo(null));
+            }
         }
         finally
         {
