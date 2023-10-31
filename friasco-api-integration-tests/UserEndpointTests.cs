@@ -67,8 +67,6 @@ public class UserEndpointTests : IntegrationTestBase
         }
     }
 
-    // Test: Get users when empty
-
     [Test]
     public async Task Users_Get_Succeeds_WithMatchingDbValues()
     {
@@ -111,7 +109,15 @@ public class UserEndpointTests : IntegrationTestBase
         }
     }
 
-    // Test: Get user when doesn't exist
+    [Test]
+    public async Task Users_Get_Succeeds_WhenUserIdDoesNotExist()
+    {
+        var id = 2385942;
+
+        var response = await Client.GetAsync($"/users/{id}");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
+    }
 
     #endregion
 
@@ -402,7 +408,7 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task Users_Delete_Succeeds_WhenUserIdDoesNotExist()
     {
-        var id = 238942893;
+        var id = 2385942;
 
         var response = await Client.DeleteAsync($"/users/{id}");
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));

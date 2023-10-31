@@ -22,7 +22,7 @@ public class UsersController : ControllerBase
     {
         _logger.LogDebug("UsersController::GetAll");
 
-        var users = _userService.GetAll();
+        var users = await _userService.GetAll();
 
         return Ok(users);
     }
@@ -32,7 +32,7 @@ public class UsersController : ControllerBase
     {
         _logger.LogDebug($"UsersController::GetById id: {id}");
 
-        var user = _userService.GetById(id);
+        var user = await _userService.GetById(id);
 
         return Ok(user);
     }
