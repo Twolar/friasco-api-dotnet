@@ -89,14 +89,6 @@ public class IntegrationTestBase
 
     #region Helpers
 
-    public async Task<string> GetResponseResultObjectAsString(HttpResponseMessage response)
-    {
-        string responseContent = await response.Content.ReadAsStringAsync();
-        using JsonDocument jsonDocument = JsonDocument.Parse(responseContent);
-        JsonElement resultJsonElement = jsonDocument.RootElement.GetProperty("result");
-        return resultJsonElement.GetRawText();
-    }
-
     public async Task<int> DbUserCreate(User user)
     {
         using (var scope = Factory.Services.CreateScope())
