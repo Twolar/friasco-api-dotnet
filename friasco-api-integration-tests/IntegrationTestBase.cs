@@ -63,7 +63,7 @@ public class IntegrationTestBase
     [SetUp]
     public void SetUp()
     {
-        // TODO: Causing locks in SQLite, potentially revisit when migrated to different database
+        // FUTURE TODO: Causing locks in SQLite, potentially revisit when migrated to different database
         // Open SQL Transaction
         // using (var scope = Factory.Services.CreateScope())
         // {
@@ -77,7 +77,7 @@ public class IntegrationTestBase
     [TearDown]
     public void TearDown()
     {
-        // TODO: Causing locks in SQLite, potentially revisit when migrated to different database
+        // FUTURE TODO: Causing locks in SQLite, potentially revisit when migrated to different database
         // // Rollback SQL Transaction and clean up
         // if (Transaction != null)
         // {
