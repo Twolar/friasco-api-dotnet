@@ -336,27 +336,21 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task Users_Update_Fails_WhenUserIdDoesNotExist()
     {
-        try
+        var updateUserObject = new
         {
-            var updateUserObject = new
-            {
-                Username = "updatedUser1",
-                Email = "uusUpdatedUser1@example.com",
-                FirstName = "updatedUser1First",
-                LastName = "updatedUser1Last",
-                Role = UserRoleEnum.Admin,
-                Password = "updatedPasswordHash123",
-                ConfirmPassword = "updatedPasswordHash123",
-            };
-            JsonContent updateUserContent = JsonContent.Create(updateUserObject);
+            Username = "updatedUser1",
+            Email = "uusUpdatedUser1@example.com",
+            FirstName = "updatedUser1First",
+            LastName = "updatedUser1Last",
+            Role = UserRoleEnum.Admin,
+            Password = "updatedPasswordHash123",
+            ConfirmPassword = "updatedPasswordHash123",
+        };
+        JsonContent updateUserContent = JsonContent.Create(updateUserObject);
 
-            var response = await Client.PutAsync($"/users/{1232131}", updateUserContent);
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
-            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
-        }
-        finally
-        {
-        }
+        var response = await Client.PutAsync($"/users/{1232131}", updateUserContent);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
     }
 
     // Test: Update user with missing fields
@@ -408,20 +402,11 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task Users_Delete_Succeeds_WhenUserIdDoesNotExist()
     {
-        try
-        {
-            var id = 238942893;
+        var id = 238942893;
 
-            var response = await Client.DeleteAsync($"/users/{id}");
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
-
-            // We want to return 200 OK because user should be deleted whether it existed or not,
-            // Also don't want to tell an api client whether a user exists by that ID...
-        }
-        finally
-        {
-        }
+        var response = await Client.DeleteAsync($"/users/{id}");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
     }
 
     #endregion

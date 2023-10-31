@@ -57,6 +57,18 @@ public class UserServiceTests
     }
 
     [Test]
+    public async Task GetById_ThrowsExceptionIfUserDoesNotExistAlready()
+    {
+        var expectedUser = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        _userRepositoryMock.Setup(x => x.GetById(expectedUser.Id)).ReturnsAsync((User)null);
+
+        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.GetById(expectedUser.Id));
+        Assert.That(exception.Message, Is.EqualTo($"User with id: {expectedUser.Id} not found"));
+
+        _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
+    }
+
+    [Test]
     public async Task Create_CreatesUser_ReturnsOneRowAffected()
     {
         var userCreateRequestModel = new UserCreateRequestModel
@@ -113,7 +125,7 @@ public class UserServiceTests
 
         _userRepositoryMock.Setup(x => x.GetByEmail(userCreateRequestModel.Email)).ReturnsAsync(existingUser);
 
-        var exception = Assert.ThrowsAsync<DuplicateEmailException>(async () => await _userService.Create(userCreateRequestModel));
+        var exception = Assert.ThrowsAsync<CustomAppException>(async () => await _userService.Create(userCreateRequestModel));
         Assert.That(exception.Message, Is.EqualTo($"User with the email: {userCreateRequestModel.Email} already exists"));
 
         _userRepositoryMock.Verify(x => x.GetByEmail(It.IsAny<string>()), Times.Once());
@@ -155,7 +167,7 @@ public class UserServiceTests
     }
 
     [Test]
-    public async Task Update_ThrowsExceptionIfUserDoesNotExistAlready()
+    public async Task Update_ThrowsExceptionUserModelEmailAlreadyExists()
     {
         var userUpdateRequestModel = new UserUpdateRequestModel
         {
@@ -185,7 +197,7 @@ public class UserServiceTests
         _userRepositoryMock.Setup(x => x.GetById(userToUpdate.Id)).ReturnsAsync(userToUpdate);
         _userRepositoryMock.Setup(x => x.GetByEmail(userUpdateRequestModel.Email)).ReturnsAsync(userExistingWithSameEmail);
 
-        var exception = Assert.ThrowsAsync<DuplicateEmailException>(async () => await _userService.Update(userToUpdate.Id, userUpdateRequestModel));
+        var exception = Assert.ThrowsAsync<CustomAppException>(async () => await _userService.Update(userToUpdate.Id, userUpdateRequestModel));
         Assert.That(exception.Message, Is.EqualTo($"User with the email: {userUpdateRequestModel.Email} already exists"));
 
         _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
@@ -193,7 +205,7 @@ public class UserServiceTests
     }
 
     [Test]
-    public async Task Update_ThrowsExceptionUserModelEmailAlreadyExists()
+    public async Task Update_ThrowsExceptionIfUserDoesNotExistAlready()
     {
         var userUpdateRequestModel = new UserUpdateRequestModel
         {
@@ -223,11 +235,24 @@ public class UserServiceTests
     public async Task Delete_DeletesUser_ReturnsOneRowAffected()
     {
         var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        _userRepositoryMock.Setup(x => x.GetById(userToDelete.Id)).ReturnsAsync(userToDelete);
         _userRepositoryMock.Setup(x => x.Delete(userToDelete.Id)).ReturnsAsync(1);
 
         var rowsAffected = await _userService.Delete(userToDelete.Id);
 
         Assert.That(rowsAffected, Is.EqualTo(1));
         _userRepositoryMock.Verify(x => x.Delete(userToDelete.Id), Times.Once());
+    }
+
+    [Test]
+    public async Task Delete_ThrowsExceptionIfUserDoesNotExistAlready()
+    {
+        var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        _userRepositoryMock.Setup(x => x.GetById(userToDelete.Id)).ReturnsAsync((User)null);
+
+        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.Delete(userToDelete.Id));
+        Assert.That(exception.Message, Is.EqualTo($"User with id: {userToDelete.Id} not found"));
+
+        _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
     }
 }

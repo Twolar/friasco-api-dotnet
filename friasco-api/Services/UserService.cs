@@ -54,8 +54,7 @@ public class UserService : IUserService
 
         if (await _userRepository.GetByEmail(model.Email!) != null)
         {
-            // TODO: Maybe something to look at if it gets to the point where there are too many...
-            throw new DuplicateEmailException($"User with the email: {model.Email} already exists");
+            throw new CustomAppException($"User with the email: {model.Email} already exists");
         }
 
         var user = _mapper.Map<User>(model);
@@ -83,7 +82,7 @@ public class UserService : IUserService
             // Check if new email already exists
             if ((model.Email != user.Email) && await _userRepository.GetByEmail(model.Email) != null)
             {
-                throw new DuplicateEmailException($"User with the email: {model.Email} already exists");
+                throw new CustomAppException($"User with the email: {model.Email} already exists");
             }
 
         }
@@ -103,6 +102,13 @@ public class UserService : IUserService
     public async Task<int> Delete(int id)
     {
         _logger.LogDebug($"UserService::Delete id: {id}");
+
+        var user = await _userRepository.GetById(id);
+
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"User with id: {id} not found");
+        }
 
         var rowsAffectedResult = await _userRepository.Delete(id);
 

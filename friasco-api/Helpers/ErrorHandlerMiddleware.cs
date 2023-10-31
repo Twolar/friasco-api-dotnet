@@ -1,4 +1,7 @@
-﻿namespace friasco_api.Helpers;
+﻿using System.Net;
+using System.Text.Json;
+
+namespace friasco_api.Helpers;
 
 public class ErrorHandlerMiddleware
 {
@@ -13,9 +16,31 @@ public class ErrorHandlerMiddleware
 
     public async Task Invoke(HttpContext httpContext)
     {
-        _logger.LogDebug("MyMiddleware executing..");
+        try
+        {
+            await _next(httpContext);
+        }
+        catch (Exception error)
+        {
+            var response = httpContext.Response;
+            response.ContentType = "application/json";
 
-        await _next(httpContext); // calling next middleware
+            switch (error)
+            {
+                case CustomAppException e:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    break;
+                case KeyNotFoundException e:
+                    response.StatusCode = (int)HttpStatusCode.NotFound;
+                    break;
+                default:
+                    _logger.LogError(error, error.Message);
+                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    break;
+            }
 
+            var result = JsonSerializer.Serialize( new { message = error?.Message } );
+            await response.WriteAsync(result);
+        }
     }
 }
