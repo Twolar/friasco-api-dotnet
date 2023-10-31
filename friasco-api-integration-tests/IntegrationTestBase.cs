@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Dapper;
 using friasco_api.Data;
 using friasco_api.Data.Entities;
@@ -15,10 +16,17 @@ public class IntegrationTestBase
     protected WebApplicationFactory<Program> Factory { get; private set; }
     protected HttpClient Client { get; private set; }
     protected IDbTransaction? Transaction { get; private set; }
-    protected JsonSerializerOptions DefaultTestingJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+    protected JsonSerializerOptions DefaultTestingJsonSerializerOptions { get; set; }
+
+    public IntegrationTestBase()
     {
-        PropertyNameCaseInsensitive = false
-    };
+        DefaultTestingJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = false,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        DefaultTestingJsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    }
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()

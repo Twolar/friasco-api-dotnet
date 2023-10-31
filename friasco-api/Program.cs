@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using friasco_api.Data;
 using friasco_api.Data.Repositories;
 using friasco_api.Helpers;
@@ -21,7 +22,12 @@ builder.Services.AddScoped<IDataContext, DataContext>(serviceProvider =>
     return new DataContext(() => new SqliteConnection(connectionString));
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(x =>
+    {
+        x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        x.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -45,6 +51,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.UseMiddleware<ErrorHandlerMiddleware>();
+
 app.MapControllers();
 
 app.Run();

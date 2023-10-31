@@ -151,7 +151,7 @@ public class UserServiceTests
             Email = userUpdateRequestModel.Email,
             FirstName = userUpdateRequestModel.FirstName,
             LastName = userUpdateRequestModel.LastName,
-            Role = userUpdateRequestModel.Role
+            Role = userUpdateRequestModel.Role.Value
         };
 
         _userRepositoryMock.Setup(x => x.GetById(userToUpdate.Id)).ReturnsAsync(userToUpdate);
@@ -186,7 +186,7 @@ public class UserServiceTests
             Email = "user2@example.com",
             FirstName = userUpdateRequestModel.FirstName,
             LastName = userUpdateRequestModel.LastName,
-            Role = userUpdateRequestModel.Role
+            Role = userUpdateRequestModel.Role.Value
         };
         var userExistingWithSameEmail = new User
         {
