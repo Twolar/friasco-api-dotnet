@@ -472,8 +472,6 @@ public class UserEndpointTests : IntegrationTestBase
         }
     }
 
-    // TODO: Test: Update user with missing fields
-    // Believe this is all gucci just need to handle defaults to do with Enums
     [Test]
     public async Task Users_Update_Succeeds_WithMissingRequest()
     {
