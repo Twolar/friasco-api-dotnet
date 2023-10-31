@@ -54,7 +54,7 @@ public class UserService : IUserService
 
         if (await _userRepository.GetByEmail(model.Email!) != null)
         {
-            throw new CustomAppException($"User with the email: {model.Email} already exists");
+            throw new AppException($"User with the email: {model.Email} already exists");
         }
 
         var user = _mapper.Map<User>(model);
@@ -82,12 +82,13 @@ public class UserService : IUserService
             // Check if new email already exists
             if ((model.Email != user.Email) && await _userRepository.GetByEmail(model.Email) != null)
             {
-                throw new CustomAppException($"User with the email: {model.Email} already exists");
+                throw new AppException($"User with the email: {model.Email} already exists");
             }
 
         }
 
-        if (model.Role == null) {
+        if (model.Role == null)
+        {
             // Stop role defaulting to 0 on an empty request
             model.Role = user.Role;
         }

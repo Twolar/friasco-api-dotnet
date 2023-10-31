@@ -25,21 +25,32 @@ public class ErrorHandlerMiddleware
             var response = httpContext.Response;
             response.ContentType = "application/json";
 
+            var errorDetails = new ErrorResponse()
+            {
+                Title = "One or more errors occurred."
+            };
+
             switch (error)
             {
-                case CustomAppException e:
+                case AppException e:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    errorDetails.Status = (int)HttpStatusCode.BadRequest;
+                    errorDetails.Errors.Add(nameof(Exception), e.Message);
                     break;
                 case KeyNotFoundException e:
                     response.StatusCode = (int)HttpStatusCode.NotFound;
+                    errorDetails.Status = (int)HttpStatusCode.NotFound;
+                    errorDetails.Errors.Add(nameof(Exception), e.Message);
                     break;
                 default:
                     _logger.LogError(error, error.Message);
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    errorDetails.Status = (int)HttpStatusCode.InternalServerError;
+                    errorDetails.Errors.Add(nameof(Exception), error.Message);
                     break;
             }
 
-            var result = JsonSerializer.Serialize( new { message = error?.Message } );
+            var result = JsonSerializer.Serialize(errorDetails);
             await response.WriteAsync(result);
         }
     }

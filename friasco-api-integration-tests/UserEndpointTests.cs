@@ -225,6 +225,16 @@ public class UserEndpointTests : IntegrationTestBase
         var response = await Client.PostAsync("/users", jsonContent);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
+
+        // TODO: Continue asserting all error messages...
+
+        // var contentJsonString = await response.Content.ReadAsStringAsync();
+        // ErrorResponse errorResponse = JsonSerializer.Deserialize<ErrorResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+
+        // Assert.That(errorResponse.Type, Is.EqualTo(""));
+        // Assert.That(errorResponse.Title, Is.EqualTo("One or more errors occurred."));
+        // Assert.That(errorResponse.Status, Is.EqualTo((int)HttpStatusCode.BadRequest));
+        // Assert.That(errorResponse.TraceId, Is.EqualTo(""));
     }
 
     [Test]
@@ -591,61 +601,61 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task Users_Update_Fails_WhenPasswordsDoNotMatch()
     {
-{
-        User? userInDb = null;
-        var newUser = new User
         {
-            Username = "User1",
-            Email = "uusUser1@example.com",
-            FirstName = "User1First",
-            LastName = "User1Last",
-            Role = UserRoleEnum.User,
-            PasswordHash = "PasswordHash123",
-        };
-
-        try
-        {
-            await DbUserCreate(newUser);
-
-            userInDb = await DbUserGetByEmail(newUser.Email);
-            Assert.That(userInDb, Is.Not.EqualTo(null));
-            var userInDbPasswordHashBeforeUpdate = userInDb.PasswordHash;
-
-            var updateUserObject = new
+            User? userInDb = null;
+            var newUser = new User
             {
-                Username = "updatedUser1",
-                Email = "uusUpdatedUser1@example.com",
-                FirstName = "updatedUser1First",
-                LastName = "updatedUser1Last",
-                Role = UserRoleEnum.Admin,
-                Password = "321Password",
-                ConfirmPassword = "updatedPasswordHash123",
+                Username = "User1",
+                Email = "uusUser1@example.com",
+                FirstName = "User1First",
+                LastName = "User1Last",
+                Role = UserRoleEnum.User,
+                PasswordHash = "PasswordHash123",
             };
-            JsonContent updateUserContent = JsonContent.Create(updateUserObject);
 
-            var response = await Client.PutAsync($"/users/{userInDb.Id}", updateUserContent);
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
-
-            userInDb = await DbUserGetById(userInDb.Id);
-
-            Assert.That(userInDb, Is.Not.EqualTo(null));
-            Assert.That(userInDb.Username, Is.EqualTo(newUser.Username));
-            Assert.That(userInDb.Email, Is.EqualTo(newUser.Email));
-            Assert.That(userInDb.FirstName, Is.EqualTo(newUser.FirstName));
-            Assert.That(userInDb.LastName, Is.EqualTo(newUser.LastName));
-            Assert.That(userInDb.Role, Is.EqualTo(newUser.Role));
-            Assert.That(userInDb.PasswordHash, Is.EqualTo(newUser.PasswordHash));
-        }
-        finally
-        {
-            if (userInDb != null)
+            try
             {
-                await DbUserDeleteById(userInDb.Id);
+                await DbUserCreate(newUser);
 
+                userInDb = await DbUserGetByEmail(newUser.Email);
+                Assert.That(userInDb, Is.Not.EqualTo(null));
+                var userInDbPasswordHashBeforeUpdate = userInDb.PasswordHash;
+
+                var updateUserObject = new
+                {
+                    Username = "updatedUser1",
+                    Email = "uusUpdatedUser1@example.com",
+                    FirstName = "updatedUser1First",
+                    LastName = "updatedUser1Last",
+                    Role = UserRoleEnum.Admin,
+                    Password = "321Password",
+                    ConfirmPassword = "updatedPasswordHash123",
+                };
+                JsonContent updateUserContent = JsonContent.Create(updateUserObject);
+
+                var response = await Client.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
+
+                userInDb = await DbUserGetById(userInDb.Id);
+
+                Assert.That(userInDb, Is.Not.EqualTo(null));
+                Assert.That(userInDb.Username, Is.EqualTo(newUser.Username));
+                Assert.That(userInDb.Email, Is.EqualTo(newUser.Email));
+                Assert.That(userInDb.FirstName, Is.EqualTo(newUser.FirstName));
+                Assert.That(userInDb.LastName, Is.EqualTo(newUser.LastName));
+                Assert.That(userInDb.Role, Is.EqualTo(newUser.Role));
+                Assert.That(userInDb.PasswordHash, Is.EqualTo(newUser.PasswordHash));
+            }
+            finally
+            {
+                if (userInDb != null)
+                {
+                    await DbUserDeleteById(userInDb.Id);
+
+                }
             }
         }
-    }
     }
 
     #endregion
