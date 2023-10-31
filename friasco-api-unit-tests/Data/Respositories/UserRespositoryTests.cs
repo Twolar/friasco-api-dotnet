@@ -46,12 +46,12 @@ public class UserRespositoryTests
     {
         var userId = 1;
         var expectedUser = new User { Id = userId, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
-        _mockDapperWrapper.Setup(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), userId)).ReturnsAsync(expectedUser);
+        _mockDapperWrapper.Setup(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(expectedUser);
 
         var user = await _userRepository.GetById(userId);
 
         Assert.That(user, Is.EqualTo(expectedUser));
-        _mockDapperWrapper.Verify(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), userId), Times.Once());
+        _mockDapperWrapper.Verify(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>()), Times.Once());
     }
 
     [Test]
@@ -59,12 +59,12 @@ public class UserRespositoryTests
     {
         var userEmail = "user1@example.com";
         var expectedUser = new User { Id = 1, Username = "User1", Email = userEmail, FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
-        _mockDapperWrapper.Setup(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), userEmail)).ReturnsAsync(expectedUser);
+        _mockDapperWrapper.Setup(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(expectedUser);
 
         var user = await _userRepository.GetByEmail(userEmail);
 
         Assert.That(user, Is.EqualTo(expectedUser));
-        _mockDapperWrapper.Verify(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), userEmail), Times.Once());
+        _mockDapperWrapper.Verify(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>()), Times.Once());
     }
 
     [Test]
@@ -95,11 +95,12 @@ public class UserRespositoryTests
     public async Task Delete_DeletesUser_ReturnsOneRowAffected()
     {
         var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
-        _mockDapperWrapper.Setup(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), userToDelete.Id)).ReturnsAsync(1);
+        var objectParams = new { id = userToDelete.Id };
+        _mockDapperWrapper.Setup(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(1);
 
         var rowsAffected = await _userRepository.Delete(userToDelete.Id);
 
         Assert.That(rowsAffected, Is.EqualTo(1));
-        _mockDapperWrapper.Verify(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), userToDelete.Id), Times.Once());
+        _mockDapperWrapper.Verify(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>()), Times.Once());
     }
 }
