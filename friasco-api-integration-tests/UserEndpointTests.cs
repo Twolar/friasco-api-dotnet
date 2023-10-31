@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using friasco_api.Data.Entities;
@@ -65,7 +66,46 @@ public class UserEndpointTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task Users_Get_Succeeds_WithMatchingDbValues() { }
+    public async Task Users_Get_Succeeds_WithMatchingDbValues()
+    {
+        var newUser = new User
+        {
+            Username = "User1",
+            Email = "ugsUser1@example.com",
+            FirstName = "User1First",
+            LastName = "User1Last",
+            Role = UserRoleEnum.User,
+            PasswordHash = "PasswordHash123",
+        };
+
+        try
+        {
+            await DbUserCreate(newUser);
+
+            var userInDb = await DbUserGetByEmail(newUser.Email);
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+
+            var response = await Client.GetAsync($"/users/{userInDb.Id}");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            var resultJsonString = await GetResponseResultObjectAsString(response);
+            User apiUserGet = JsonSerializer.Deserialize<User>(resultJsonString, DefaultTestingJsonSerializerOptions);
+
+            Assert.That(apiUserGet, Is.Not.EqualTo(null));
+            Assert.That(apiUserGet.Username, Is.EqualTo(userInDb.Username));
+            Assert.That(apiUserGet.Email, Is.EqualTo(userInDb.Email));
+            Assert.That(apiUserGet.FirstName, Is.EqualTo(userInDb.FirstName));
+            Assert.That(apiUserGet.LastName, Is.EqualTo(userInDb.LastName));
+            Assert.That(apiUserGet.Role, Is.EqualTo(userInDb.Role));
+            Assert.That(apiUserGet.PasswordHash, Is.EqualTo(null));
+
+        }
+        finally
+        {
+            await DbUserDeleteByEmail(newUser.Email);
+        }
+    }
 
     [Test]
     public async Task Users_Create_Succeeds_WithMatchingDbValues()
@@ -111,8 +151,97 @@ public class UserEndpointTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task Users_Update_Succeeds_WithMatchingDbValues() { }
+    public async Task Users_Update_Succeeds_WithMatchingDbValues()
+    {
+        User? userInDb = null;
+        var newUser = new User
+        {
+            Username = "User1",
+            Email = "uusUser1@example.com",
+            FirstName = "User1First",
+            LastName = "User1Last",
+            Role = UserRoleEnum.User,
+            PasswordHash = "PasswordHash123",
+        };
+
+        try
+        {
+            await DbUserCreate(newUser);
+
+            userInDb = await DbUserGetByEmail(newUser.Email);
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+            var userInDbPasswordHashBeforeUpdate = userInDb.PasswordHash;
+
+            var updateUserObject = new
+            {
+                Username = "updatedUser1",
+                Email = "uusUpdatedUser1@example.com",
+                FirstName = "updatedUser1First",
+                LastName = "updatedUser1Last",
+                Role = UserRoleEnum.Admin,
+                Password = "updatedPasswordHash123",
+                ConfirmPassword = "updatedPasswordHash123",
+            };
+            JsonContent updateUserContent = JsonContent.Create(updateUserObject);
+
+            var response = await Client.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            userInDb = await DbUserGetById(userInDb.Id);
+
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+            Assert.That(userInDb.Username, Is.EqualTo(updateUserObject.Username));
+            Assert.That(userInDb.Email, Is.EqualTo(updateUserObject.Email));
+            Assert.That(userInDb.FirstName, Is.EqualTo(updateUserObject.FirstName));
+            Assert.That(userInDb.LastName, Is.EqualTo(updateUserObject.LastName));
+            Assert.That(userInDb.Role, Is.EqualTo(updateUserObject.Role));
+            Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(userInDbPasswordHashBeforeUpdate));
+        }
+        finally
+        {
+            if (userInDb != null)
+            {
+                await DbUserDeleteById(userInDb.Id);
+
+            }
+        }
+    }
 
     [Test]
-    public async Task Users_Delete_Succeeds_WithMatchingDbValues() { }
+    public async Task Users_Delete_Succeeds_WithMatchingDbValues()
+    {
+        User? userInDb = null;
+        var newUser = new User
+        {
+            Username = "User1",
+            Email = "udsUser1@example.com",
+            FirstName = "User1First",
+            LastName = "User1Last",
+            Role = UserRoleEnum.User,
+            PasswordHash = "PasswordHash123",
+        };
+
+        try
+        {
+            await DbUserCreate(newUser);
+
+            userInDb = await DbUserGetByEmail(newUser.Email);
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+
+            var response = await Client.DeleteAsync($"/users/{userInDb.Id}");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            userInDb = await DbUserGetById(userInDb.Id);
+            Assert.That(userInDb, Is.EqualTo(null));
+        }
+        finally
+        {
+            if (userInDb != null)
+            {
+                await DbUserDeleteById(userInDb.Id);
+            }
+        }
+    }
 }

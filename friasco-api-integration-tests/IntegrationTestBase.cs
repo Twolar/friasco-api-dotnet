@@ -137,6 +137,30 @@ public class IntegrationTestBase
         }
     }
 
+    public async Task<User?> DbUserGetById(int id)
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
+            var connection = context.CreateConnection();
+            connection.Open();
+
+            try
+            {
+                var sql = @"
+                    SELECT * FROM Users
+                    WHERE Id = @id
+                ";
+                return await connection.QueryFirstOrDefaultAsync<User>(sql, new { id });
+            }
+            finally
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+        }
+    }
+
     public async Task<User?> DbUserGetByEmail(string email)
     {
         using (var scope = Factory.Services.CreateScope())
