@@ -87,6 +87,11 @@ public class UserService : IUserService
 
         }
 
+        if (model.Role == null) {
+            // Stop role defaulting to 0 on an empty request
+            model.Role = user.Role;
+        }
+
         if (!string.IsNullOrEmpty(model.Password))
         {
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);

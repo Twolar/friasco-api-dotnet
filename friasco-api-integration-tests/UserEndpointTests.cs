@@ -513,7 +513,7 @@ public class UserEndpointTests : IntegrationTestBase
             Assert.That(userInDb.FirstName, Is.EqualTo(newUser.FirstName));
             Assert.That(userInDb.LastName, Is.EqualTo(newUser.LastName));
             Assert.That(userInDb.Role, Is.EqualTo(newUser.Role));
-            Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(newUser.PasswordHash));
+            Assert.That(userInDb.PasswordHash, Is.EqualTo(newUser.PasswordHash));
         }
         finally
         {

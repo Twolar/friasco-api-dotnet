@@ -15,7 +15,7 @@ public class UserUpdateRequestModel
     public string? Email { get; set; }
 
     [EnumDataType(typeof(UserRoleEnum))]
-    public UserRoleEnum Role { get; set; }
+    public UserRoleEnum? Role { get; set; }
 
     private string? _password;
     [MinLength(6)]
