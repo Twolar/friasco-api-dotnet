@@ -53,12 +53,12 @@ public class AuthService : IAuthService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        var userToken = await GenerateToken(authClaims);
+        var userToken = GenerateToken(authClaims);
 
         return userToken;
     }
 
-    private async Task<string> GenerateToken(IEnumerable<Claim> claims)
+    private string GenerateToken(IEnumerable<Claim> claims)
     {
         // TODO: Test me...
 
