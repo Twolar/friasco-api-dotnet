@@ -1,5 +1,7 @@
-﻿using friasco_api.Models;
+﻿using friasco_api.Enums;
+using friasco_api.Models;
 using friasco_api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace friasco_api.Controllers;
@@ -28,6 +30,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = nameof(UserRoleEnum.Admin))]
     public async Task<IActionResult> GetById(int id)
     {
         _logger.LogDebug($"UsersController::GetById id: {id}");
