@@ -26,7 +26,7 @@ public class IntegrationTestBase
 
         DefaultTestingJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
-            PropertyNameCaseInsensitive = false,
+            PropertyNameCaseInsensitive = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
         DefaultTestingJsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());

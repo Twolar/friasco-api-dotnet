@@ -6,7 +6,7 @@ public class ErrorResponse
     public string Title { get; set; }
     public int Status { get; set; }
     public string TraceId { get; set; }
-    public Dictionary<string, string> Errors { get; }
+    public Dictionary<string, string[]> Errors { get; }
 
     public ErrorResponse(string type = "", string title = "", int status = 0, string traceId = "")
     {
@@ -14,6 +14,6 @@ public class ErrorResponse
         Title = title;
         Status = status;
         TraceId = traceId;
-        Errors = new Dictionary<string, string>();
+        Errors = new Dictionary<string, string[]>();
     }
 }
