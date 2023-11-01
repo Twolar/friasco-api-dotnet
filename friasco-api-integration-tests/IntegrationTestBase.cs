@@ -17,9 +17,13 @@ public class IntegrationTestBase
     protected HttpClient Client { get; private set; }
     protected IDbTransaction? Transaction { get; private set; }
     protected JsonSerializerOptions DefaultTestingJsonSerializerOptions { get; set; }
+    protected string FriascoTestDatabaseString { get; private set;}
 
     public IntegrationTestBase()
     {
+        var friascoTestDatabasePath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "FriascoDatabaseTEST.db");
+        FriascoTestDatabaseString = $"Data Source={friascoTestDatabasePath}";
+
         DefaultTestingJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
             PropertyNameCaseInsensitive = false,
@@ -46,8 +50,7 @@ public class IntegrationTestBase
                     // Replace with our own for testing purposes
                     services.AddScoped<IDataContext, DataContext>(serviceProvider =>
                     {
-                        var testingDbPathAndName = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "FriascoDatabaseTEST.db");
-                        return new DataContext(() => new SqliteConnection($"Data Source={testingDbPathAndName}"));
+                        return new DataContext(() => new SqliteConnection(FriascoTestDatabaseString));
                     });
                 });
             });
