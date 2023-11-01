@@ -35,18 +35,18 @@ public class ErrorHandlerMiddleware
                 case AppException e:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     errorDetails.Status = (int)HttpStatusCode.BadRequest;
-                    errorDetails.Errors.Add(nameof(Exception), e.Message);
+                    errorDetails.Errors.Add(nameof(Exception), new[] { e.Message });
                     break;
                 case KeyNotFoundException e:
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                     errorDetails.Status = (int)HttpStatusCode.NotFound;
-                    errorDetails.Errors.Add(nameof(Exception), e.Message);
+                    errorDetails.Errors.Add(nameof(Exception), new[] { e.Message });
                     break;
                 default:
                     _logger.LogError(error, error.Message);
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     errorDetails.Status = (int)HttpStatusCode.InternalServerError;
-                    errorDetails.Errors.Add(nameof(Exception), error.Message);
+                    errorDetails.Errors.Add(nameof(Exception), new[] { error.Message });
                     break;
             }
 
