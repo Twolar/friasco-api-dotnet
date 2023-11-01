@@ -17,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IDapperWrapper, DapperWrapper>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // AutoMapper Profiles
 builder.Services.AddAutoMapper(typeof(MapperProfile).Assembly);
