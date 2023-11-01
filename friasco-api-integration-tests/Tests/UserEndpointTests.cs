@@ -5,7 +5,7 @@ using System.Text.Json;
 using friasco_api.Data.Entities;
 using friasco_api.Enums;
 
-namespace friasco_api_integration_tests;
+namespace friasco_api_integration_tests.Tests;
 
 [TestFixture]
 public class UserEndpointTests : IntegrationTestBase
