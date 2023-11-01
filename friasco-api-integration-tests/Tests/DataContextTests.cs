@@ -2,7 +2,7 @@
 using friasco_api.Data;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace friasco_api_integration_tests;
+namespace friasco_api_integration_tests.Tests;
 
 [TestFixture]
 public class DataContextTests : IntegrationTestBase
