@@ -74,28 +74,11 @@ public class IntegrationTestBase
     [SetUp]
     public void SetUp()
     {
-        // FUTURE TODO: Causing locks in SQLite, potentially revisit when migrated to different database
-        // Open SQL Transaction
-        // using (var scope = Factory.Services.CreateScope())
-        // {
-        //     var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
-        //     var connection = context.CreateConnection();
-        //     connection.Open();
-        //     Transaction = connection.BeginTransaction();
-        // }
     }
 
     [TearDown]
     public void TearDown()
     {
-        // FUTURE TODO: Causing locks in SQLite, potentially revisit when migrated to different database
-        // // Rollback SQL Transaction and clean up
-        // if (Transaction != null)
-        // {
-        //     Transaction.Rollback();
-        //     Transaction.Dispose();
-        //     Transaction.Connection?.Dispose();
-        // }
     }
 
     #region Helpers
