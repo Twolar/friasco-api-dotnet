@@ -63,7 +63,7 @@ public class UserServiceTests
         _userRepositoryMock.Setup(x => x.GetById(expectedUser.Id)).ReturnsAsync((User)null);
 
         var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.GetById(expectedUser.Id));
-        Assert.That(exception.Message, Is.EqualTo($"User with id: {expectedUser.Id} not found"));
+        Assert.That(exception.Message, Is.EqualTo($"User with id [{expectedUser.Id}] not found"));
 
         _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
     }
@@ -126,7 +126,7 @@ public class UserServiceTests
         _userRepositoryMock.Setup(x => x.GetByEmail(userCreateRequestModel.Email)).ReturnsAsync(existingUser);
 
         var exception = Assert.ThrowsAsync<AppException>(async () => await _userService.Create(userCreateRequestModel));
-        Assert.That(exception.Message, Is.EqualTo($"User with the email: {userCreateRequestModel.Email} already exists"));
+        Assert.That(exception.Message, Is.EqualTo($"User with the email [{userCreateRequestModel.Email}] already exists"));
 
         _userRepositoryMock.Verify(x => x.GetByEmail(It.IsAny<string>()), Times.Once());
     }
@@ -198,7 +198,7 @@ public class UserServiceTests
         _userRepositoryMock.Setup(x => x.GetByEmail(userUpdateRequestModel.Email)).ReturnsAsync(userExistingWithSameEmail);
 
         var exception = Assert.ThrowsAsync<AppException>(async () => await _userService.Update(userToUpdate.Id, userUpdateRequestModel));
-        Assert.That(exception.Message, Is.EqualTo($"User with the email: {userUpdateRequestModel.Email} already exists"));
+        Assert.That(exception.Message, Is.EqualTo($"User with the email [{userUpdateRequestModel.Email}] already exists"));
 
         _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
         _userRepositoryMock.Verify(x => x.GetByEmail(It.IsAny<string>()), Times.Once());
@@ -225,7 +225,7 @@ public class UserServiceTests
         _userRepositoryMock.Setup(x => x.GetById(userToUpdate.Id)).ReturnsAsync((User)null);
 
         var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.Update(userToUpdate.Id, userUpdateRequestModel));
-        Assert.That(exception.Message, Is.EqualTo($"User with id: {userToUpdate.Id} not found"));
+        Assert.That(exception.Message, Is.EqualTo($"User with id [{userToUpdate.Id}] not found"));
 
         _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
     }
@@ -251,7 +251,7 @@ public class UserServiceTests
         _userRepositoryMock.Setup(x => x.GetById(userToDelete.Id)).ReturnsAsync((User)null);
 
         var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.Delete(userToDelete.Id));
-        Assert.That(exception.Message, Is.EqualTo($"User with id: {userToDelete.Id} not found"));
+        Assert.That(exception.Message, Is.EqualTo($"User with id [{userToDelete.Id}] not found"));
 
         _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
     }

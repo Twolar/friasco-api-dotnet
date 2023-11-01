@@ -42,7 +42,7 @@ public class UserService : IUserService
 
         if (user == null)
         {
-            throw new KeyNotFoundException($"User with id: {id} not found");
+            throw new KeyNotFoundException($"User with id [{id}] not found");
         }
 
         return user;
@@ -54,7 +54,7 @@ public class UserService : IUserService
 
         if (await _userRepository.GetByEmail(model.Email!) != null)
         {
-            throw new AppException($"User with the email: {model.Email} already exists");
+            throw new AppException($"User with the email [{model.Email}] already exists");
         }
 
         var user = _mapper.Map<User>(model);
@@ -74,7 +74,7 @@ public class UserService : IUserService
 
         if (user == null)
         {
-            throw new KeyNotFoundException($"User with id: {id} not found");
+            throw new KeyNotFoundException($"User with id [{id}] not found");
         }
 
         if (!string.IsNullOrEmpty(model.Email))
@@ -82,7 +82,7 @@ public class UserService : IUserService
             // Check if new email already exists
             if ((model.Email != user.Email) && await _userRepository.GetByEmail(model.Email) != null)
             {
-                throw new AppException($"User with the email: {model.Email} already exists");
+                throw new AppException($"User with the email [{model.Email}] already exists");
             }
 
         }
@@ -113,7 +113,7 @@ public class UserService : IUserService
 
         if (user == null)
         {
-            throw new KeyNotFoundException($"User with id: {id} not found");
+            throw new KeyNotFoundException($"User with id [{id}] not found");
         }
 
         var rowsAffectedResult = await _userRepository.Delete(id);
