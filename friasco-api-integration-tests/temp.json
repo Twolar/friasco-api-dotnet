@@ -1,0 +1,21 @@
+{
+  "result": [
+    {
+      "id": 1,
+      "username": "intUser1",
+      "firstName": "intuser1First",
+      "lastName": "intuser1Last",
+      "email": "user@example.com",
+      "role": 1
+    }
+  ],
+  "id": 1,
+  "exception": null,
+  "status": 5,
+  "isCanceled": false,
+  "isCompleted": true,
+  "isCompletedSuccessfully": true,
+  "creationOptions": 0,
+  "asyncState": null,
+  "isFaulted": false
+}
