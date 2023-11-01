@@ -225,16 +225,6 @@ public class UserEndpointTests : IntegrationTestBase
         var response = await Client.PostAsync("/users", jsonContent);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
-
-        // TODO: Continue asserting all error messages...
-
-        // var contentJsonString = await response.Content.ReadAsStringAsync();
-        // ErrorResponse errorResponse = JsonSerializer.Deserialize<ErrorResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
-
-        // Assert.That(errorResponse.Type, Is.EqualTo(""));
-        // Assert.That(errorResponse.Title, Is.EqualTo("One or more errors occurred."));
-        // Assert.That(errorResponse.Status, Is.EqualTo((int)HttpStatusCode.BadRequest));
-        // Assert.That(errorResponse.TraceId, Is.EqualTo(""));
     }
 
     [Test]
