@@ -17,12 +17,17 @@ public class IntegrationTestBase
     protected HttpClient Client { get; private set; }
     protected IDbTransaction? Transaction { get; private set; }
     protected JsonSerializerOptions DefaultTestingJsonSerializerOptions { get; set; }
-    protected string FriascoTestDatabaseString { get; private set;}
+    protected string FriascoTestDatabaseString { get; private set; }
 
     public IntegrationTestBase()
     {
         var friascoTestDatabasePath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "FriascoDatabaseTEST.db");
         FriascoTestDatabaseString = $"Data Source={friascoTestDatabasePath}";
+
+        // Setup dummy data to use for testing environment variables
+        Environment.SetEnvironmentVariable("JWT_KEY", "F6MTF6jJ5I013c3tfXd0O+pw5QUsdCv/8v+v1KLTQjlw1amYAsFb9DqNvKLVpsFs");
+        Environment.SetEnvironmentVariable("JWT_ISSUER", "TestIssuer");
+        Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TestAudience");
 
         DefaultTestingJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
