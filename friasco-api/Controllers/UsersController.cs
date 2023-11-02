@@ -30,7 +30,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize(Roles = nameof(UserRoleEnum.Admin))]
+    [Authorize(Policy = nameof(UserRoleEnum.Admin))]
     public async Task<IActionResult> GetById(int id)
     {
         _logger.LogDebug($"UsersController::GetById id: {id}");
