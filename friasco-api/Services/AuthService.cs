@@ -90,8 +90,8 @@ public class AuthService : IAuthService
         var tokenExpiryAsHours = Convert.ToInt64(Environment.GetEnvironmentVariable("TOKEN_EXPIRY_TIME_HOUR"));
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER"), // change
-            Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"), // Change 
+            Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
+            Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
             Expires = DateTime.UtcNow.AddHours(tokenExpiryAsHours),
             SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature),
             Subject = new ClaimsIdentity(claims)
