@@ -20,12 +20,14 @@ public class UserService : IUserService
     private readonly ILogger<IUserService> _logger;
     private readonly IMapper _mapper;
     private IUserRepository _userRepository;
+    private readonly IBCryptWrapper _bcryptWrapper;
 
-    public UserService(ILogger<IUserService> logger, IMapper mapper, IUserRepository userRepository)
+    public UserService(ILogger<IUserService> logger, IMapper mapper, IUserRepository userRepository, IBCryptWrapper bcryptWrapper)
     {
         _logger = logger;
         _mapper = mapper;
         _userRepository = userRepository;
+        _bcryptWrapper = bcryptWrapper;
     }
 
     public async Task<IEnumerable<User>> GetAll()
@@ -59,7 +61,7 @@ public class UserService : IUserService
 
         var user = _mapper.Map<User>(model);
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+        user.PasswordHash = _bcryptWrapper.HashPassword(model.Password);
 
         var rowsAffectedResult = await _userRepository.Create(user);
 
@@ -95,7 +97,7 @@ public class UserService : IUserService
 
         if (!string.IsNullOrEmpty(model.Password))
         {
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+            user.PasswordHash = _bcryptWrapper.HashPassword(model.Password);
         }
 
         _mapper.Map(model, user);
