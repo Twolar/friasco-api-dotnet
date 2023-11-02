@@ -11,17 +11,20 @@ namespace friasco_api.Services;
 public interface IAuthService
 {
     Task<string> Login(AuthLoginRequestModel model);
+    Task<string> Register(UserCreateRequestModel model);
 }
 
 public class AuthService : IAuthService
 {
     private readonly ILogger<IAuthService> _logger;
     private readonly IUserRepository _userRepository;
+    private readonly IUserService _userService;
 
-    public AuthService(ILogger<IAuthService> logger, IUserRepository userRepository)
+    public AuthService(ILogger<IAuthService> logger, IUserRepository userRepository, IUserService userService)
     {
         _logger = logger;
         _userRepository = userRepository;
+        _userService = userService;
     }
 
     public async Task<string> Login(AuthLoginRequestModel model)
@@ -58,13 +61,33 @@ public class AuthService : IAuthService
         return userToken;
     }
 
+    public async Task<string> Register(UserCreateRequestModel model)
+    {
+        _logger.Log(LogLevel.Debug, "AuthService::Register");
+
+        await _userService.Create(model);
+
+        var newUserAuthLoginRequestModel = new AuthLoginRequestModel
+        {
+            Email = model.Email,
+            Password = model.Password
+        };
+
+        var userJwtToken = await Login(newUserAuthLoginRequestModel);
+
+        return userJwtToken;
+    }
+
     private string GenerateToken(IEnumerable<Claim> claims)
     {
         // TODO: Test me...
 
+        _logger.Log(LogLevel.Debug, "AuthService::GenerateToken");
+
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY")));
         var tokenExpiryAsHours = Convert.ToInt64(Environment.GetEnvironmentVariable("TOKEN_EXPIRY_TIME_HOUR"));
-        var tokenDescriptor = new SecurityTokenDescriptor {
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
             Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER"), // change
             Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"), // Change 
             Expires = DateTime.UtcNow.AddHours(tokenExpiryAsHours),
