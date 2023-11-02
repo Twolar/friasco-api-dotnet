@@ -39,15 +39,12 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            // TODO: test this outcome
             throw new AppException(invalidCredentialsString);
         }
 
-        // TODO: test this outcome
         bool userVerified = _bcryptWrapper.Verify(model.Password, user.PasswordHash);
         if (!userVerified)
         {
-            // TODO: test this outcome
             throw new AppException(invalidCredentialsString);
         }
 
@@ -82,8 +79,6 @@ public class AuthService : IAuthService
 
     private string GenerateToken(IEnumerable<Claim> claims)
     {
-        // TODO: Test me...
-
         _logger.Log(LogLevel.Debug, "AuthService::GenerateToken");
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY")));
