@@ -44,16 +44,18 @@ public class UsersControllerTests
         Assert.IsInstanceOf<OkObjectResult>(result);
     }
 
+    [Test]
     public async Task Update_ReturnsOkResult()
     {
         var model = new UserUpdateRequestModel();
         var result = await _controller.Update(1, model);
-        Assert.IsInstanceOf<OkResult>(result);
+        Assert.IsInstanceOf<OkObjectResult>(result);
     }
 
+    [Test]
     public async Task Delete_ReturnsOkResult()
     {
         var result = await _controller.Delete(1);
-        Assert.IsInstanceOf<OkResult>(result);
+        Assert.IsInstanceOf<OkObjectResult>(result);
     }
 }
