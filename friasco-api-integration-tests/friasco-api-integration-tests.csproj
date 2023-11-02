@@ -23,8 +23,4 @@
     <ProjectReference Include="..\friasco-api\friasco-api.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Tests/" />
-  </ItemGroup>
-
 </Project>
