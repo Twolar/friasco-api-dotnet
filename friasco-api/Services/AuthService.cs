@@ -19,12 +19,14 @@ public class AuthService : IAuthService
     private readonly ILogger<IAuthService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IUserService _userService;
+    private readonly IBCryptWrapper _bcryptWrapper;
 
-    public AuthService(ILogger<IAuthService> logger, IUserRepository userRepository, IUserService userService)
+    public AuthService(ILogger<IAuthService> logger, IUserRepository userRepository, IUserService userService, IBCryptWrapper bcryptWrapper)
     {
         _logger = logger;
         _userRepository = userRepository;
         _userService = userService;
+        _bcryptWrapper = bcryptWrapper;
     }
 
     public async Task<string> Login(AuthLoginRequestModel model)
@@ -42,7 +44,7 @@ public class AuthService : IAuthService
         }
 
         // TODO: test this outcome
-        bool userVerified = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
+        bool userVerified = _bcryptWrapper.Verify(model.Password, user.PasswordHash);
         if (!userVerified)
         {
             // TODO: test this outcome
