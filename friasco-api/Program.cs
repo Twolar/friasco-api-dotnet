@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using friasco_api.Data;
 using friasco_api.Data.Repositories;
+using friasco_api.Enums;
 using friasco_api.Helpers;
 using friasco_api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,12 +30,14 @@ builder.Services.AddScoped<IDataContext, DataContext>(serviceProvider =>
     return new DataContext(() => new SqliteConnection(connectionString));
 });
 
+// Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(x =>
     {
         x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         x.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -61,6 +64,33 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             RoleClaimType = ClaimTypes.Role
         }
     );
+
+// Policy Authorization
+builder.Services.AddAuthorization(options =>
+{
+    // Guest Policy
+    options.AddPolicy(nameof(UserRoleEnum.Guest), policy => policy.RequireRole(
+        nameof(UserRoleEnum.Guest),
+        nameof(UserRoleEnum.User),
+        nameof(UserRoleEnum.Admin),
+        nameof(UserRoleEnum.SuperAdmin)
+    ));
+    // User Policy
+    options.AddPolicy(nameof(UserRoleEnum.User), policy => policy.RequireRole(
+        nameof(UserRoleEnum.User),
+        nameof(UserRoleEnum.Admin),
+        nameof(UserRoleEnum.SuperAdmin)
+    ));
+    // Admin Policy
+    options.AddPolicy(nameof(UserRoleEnum.Admin), policy => policy.RequireRole(
+        nameof(UserRoleEnum.Admin),
+        nameof(UserRoleEnum.SuperAdmin)
+    ));
+    // SuperAdmin Policy
+    options.AddPolicy(nameof(UserRoleEnum.SuperAdmin), policy => policy.RequireRole(
+        nameof(UserRoleEnum.SuperAdmin)
+    ));
+});
 
 var app = builder.Build();
 
