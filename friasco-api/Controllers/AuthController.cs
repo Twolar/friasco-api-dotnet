@@ -27,4 +27,21 @@ public class AuthController : ControllerBase
 
         return Ok(new { token = userJwtToken });
     }
+
+    [HttpPost]
+    [Route("/register")]
+    public async Task<IActionResult> Register(UserCreateRequestModel model)
+    {
+        _logger.Log(LogLevel.Debug, "AuthController::Register");
+
+        var userJwtToken = await _authService.Register(model);
+
+        return Ok(
+            new
+            {
+                message = "User Created",
+                token = userJwtToken
+            }
+        );
+    }
 }
