@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using friasco_api;
 using friasco_api.Data.Entities;
 using friasco_api.Data.Repositories;
 using friasco_api.Enums;
@@ -16,6 +17,7 @@ public class UserServiceTests
     private Mock<ILogger<IUserService>> _loggerMock;
     private Mock<IMapper> _mapperMock;
     private Mock<IUserRepository> _userRepositoryMock;
+    private Mock<IBCryptWrapper> _bcryptWrapperMock;
     private IUserService _userService;
 
     [SetUp]
@@ -24,7 +26,8 @@ public class UserServiceTests
         _loggerMock = new Mock<ILogger<IUserService>>();
         _userRepositoryMock = new Mock<IUserRepository>();
         _mapperMock = new Mock<IMapper>();
-        _userService = new UserService(_loggerMock.Object, _mapperMock.Object, _userRepositoryMock.Object);
+        _bcryptWrapperMock = new Mock<IBCryptWrapper>();
+        _userService = new UserService(_loggerMock.Object, _mapperMock.Object, _userRepositoryMock.Object, _bcryptWrapperMock.Object);
     }
 
     [Test]
@@ -89,11 +92,13 @@ public class UserServiceTests
             FirstName = userCreateRequestModel.FirstName,
             LastName = userCreateRequestModel.LastName,
             Role = userCreateRequestModel.Role,
+            PasswordHash = "hashedPassword123"
         };
 
         _userRepositoryMock.Setup(x => x.GetByEmail(userCreateRequestModel.Email)).ReturnsAsync((User)null);
         _userRepositoryMock.Setup(x => x.Create(userToCreate)).ReturnsAsync(1);
         _mapperMock.Setup(x => x.Map<User>(userCreateRequestModel)).Returns(userToCreate);
+        _bcryptWrapperMock.Setup(x => x.HashPassword(userCreateRequestModel.Password)).Returns(userToCreate.PasswordHash);
 
         var rowsAffected = await _userService.Create(userCreateRequestModel);
 
@@ -102,6 +107,7 @@ public class UserServiceTests
         _userRepositoryMock.Verify(x => x.GetByEmail(It.IsAny<string>()), Times.Once());
         _mapperMock.Verify(x => x.Map<User>(It.IsAny<UserCreateRequestModel>()), Times.Once);
         _userRepositoryMock.Verify(x => x.Create(It.IsAny<User>()), Times.Once());
+        _bcryptWrapperMock.Verify(x => x.HashPassword(userCreateRequestModel.Password), Times.Once);
     }
 
     [Test]
@@ -151,19 +157,24 @@ public class UserServiceTests
             Email = userUpdateRequestModel.Email,
             FirstName = userUpdateRequestModel.FirstName,
             LastName = userUpdateRequestModel.LastName,
-            Role = userUpdateRequestModel.Role.Value
+            Role = userUpdateRequestModel.Role.Value,
+            PasswordHash = "hashedPassword123"
         };
 
         _userRepositoryMock.Setup(x => x.GetById(userToUpdate.Id)).ReturnsAsync(userToUpdate);
         _userRepositoryMock.Setup(x => x.Update(userToUpdate)).ReturnsAsync(1);
         _mapperMock.Setup(x => x.Map(userUpdateRequestModel, userToUpdate)).Returns(userToUpdate);
+        _bcryptWrapperMock.Setup(x => x.HashPassword(userUpdateRequestModel.Password)).Returns(userToUpdate.PasswordHash);
+
 
         var rowsAffected = await _userService.Update(userToUpdate.Id, userUpdateRequestModel);
 
         Assert.That(rowsAffected, Is.EqualTo(1));
 
         _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
+        _mapperMock.Verify(x => x.Map(userUpdateRequestModel, userToUpdate), Times.Once);
         _userRepositoryMock.Verify(x => x.Update(It.IsAny<User>()), Times.Once());
+        _bcryptWrapperMock.Verify(x => x.HashPassword(userUpdateRequestModel.Password), Times.Once);
     }
 
     [Test]
