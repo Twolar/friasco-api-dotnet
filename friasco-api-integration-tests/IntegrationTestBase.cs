@@ -1,9 +1,13 @@
 ﻿using System.Data;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Dapper;
 using friasco_api.Data;
 using friasco_api.Data.Entities;
+using friasco_api_integration_tests.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +32,7 @@ public class IntegrationTestBase
         Environment.SetEnvironmentVariable("JWT_KEY", "F6MTF6jJ5I013c3tfXd0O+pw5QUsdCv/8v+v1KLTQjlw1amYAsFb9DqNvKLVpsFs");
         Environment.SetEnvironmentVariable("JWT_ISSUER", "TestIssuer");
         Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TestAudience");
+        Environment.SetEnvironmentVariable("TOKEN_EXPIRY_TIME_HOUR", "3");
 
         DefaultTestingJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
@@ -60,13 +65,31 @@ public class IntegrationTestBase
                 });
             });
 
-        Client = Factory.CreateClient();
-
         using (var scope = Factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
             await context.InitDatabase();
         }
+
+        Client = Factory.CreateClient();
+
+        var userLoginObject = new
+        {
+            Email = "apiTestUser1@example.com",
+            Password = "apiTestUser1Password",
+        };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(userLoginObject), Encoding.UTF8, "application/json");
+
+        var response = await Client.PostAsync("/login", jsonContent);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+        var contentJsonString = await response.Content.ReadAsStringAsync();
+        var loginResponse = JsonSerializer.Deserialize<LoginResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+        Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
+        Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
     }
 
     [OneTimeTearDown]

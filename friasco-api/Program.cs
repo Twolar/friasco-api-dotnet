@@ -109,6 +109,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Initialize any test users needed for dev purposes
+await UserInitializer.CreateTestUsers(app);
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
