@@ -15,7 +15,7 @@ public class UserEndpointTests : IntegrationTestBase
     [Test]
     public async Task Users_GetAll_Succeeds_WithMatchingDbValues()
     {
-        var dbUserList = new List<User>() {
+        var createdDbUserList = new List<User>() {
             new User
             {
                 Username = "User1",
@@ -38,8 +38,8 @@ public class UserEndpointTests : IntegrationTestBase
 
         try
         {
-            await DbUserCreate(dbUserList[0]);
-            await DbUserCreate(dbUserList[1]);
+            await DbUserCreate(createdDbUserList[0]);
+            await DbUserCreate(createdDbUserList[1]);
 
             var response = await Client.GetAsync("/users");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -48,22 +48,24 @@ public class UserEndpointTests : IntegrationTestBase
             var contentJsonString = await response.Content.ReadAsStringAsync();
             List<User> apiUsers = JsonSerializer.Deserialize<List<User>>(contentJsonString, DefaultTestingJsonSerializerOptions);
 
-            Assert.That(apiUsers?.Count, Is.AtLeast(2));
+            var createdUsers = apiUsers.Where(u => createdDbUserList.Any(dbu => dbu.Email == u.Email)).ToList();
 
-            for (var i = 0; i < dbUserList.Count; i++)
+            Assert.That(createdUsers.Count, Is.EqualTo(createdDbUserList.Count));
+
+            for (var i = 0; i < createdDbUserList.Count; i++)
             {
-                Assert.That(apiUsers[i].Username, Is.EqualTo(dbUserList[i].Username));
-                Assert.That(apiUsers[i].Email, Is.EqualTo(dbUserList[i].Email));
-                Assert.That(apiUsers[i].FirstName, Is.EqualTo(dbUserList[i].FirstName));
-                Assert.That(apiUsers[i].LastName, Is.EqualTo(dbUserList[i].LastName));
-                Assert.That(apiUsers[i].Role, Is.EqualTo(dbUserList[i].Role));
-                Assert.That(apiUsers[i].PasswordHash, Is.EqualTo(null));
+                Assert.That(createdUsers[i].Username, Is.EqualTo(createdDbUserList[i].Username));
+                Assert.That(createdUsers[i].Email, Is.EqualTo(createdDbUserList[i].Email));
+                Assert.That(createdUsers[i].FirstName, Is.EqualTo(createdDbUserList[i].FirstName));
+                Assert.That(createdUsers[i].LastName, Is.EqualTo(createdDbUserList[i].LastName));
+                Assert.That(createdUsers[i].Role, Is.EqualTo(createdDbUserList[i].Role));
+                Assert.That(createdUsers[i].PasswordHash, Is.EqualTo(null));
             }
         }
         finally
         {
-            await DbUserDeleteByEmail(dbUserList[1].Email);
-            await DbUserDeleteByEmail(dbUserList[0].Email);
+            await DbUserDeleteByEmail(createdDbUserList[1].Email);
+            await DbUserDeleteByEmail(createdDbUserList[0].Email);
         }
     }
 
