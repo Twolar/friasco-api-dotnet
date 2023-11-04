@@ -41,7 +41,7 @@ public class UserEndpointTests : IntegrationTestBase
             await DbUserCreate(createdDbUserList[0]);
             await DbUserCreate(createdDbUserList[1]);
 
-            var response = await Client.GetAsync("/users");
+            var response = await ApiClientWithRoleSuperAdmin.GetAsync("/users");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -89,7 +89,7 @@ public class UserEndpointTests : IntegrationTestBase
             var userInDb = await DbUserGetByEmail(newUser.Email);
             Assert.That(userInDb, Is.Not.EqualTo(null));
 
-            var response = await Client.GetAsync($"/users/{userInDb.Id}");
+            var response = await ApiClientWithRoleAdmin.GetAsync($"/users/{userInDb.Id}");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -116,7 +116,7 @@ public class UserEndpointTests : IntegrationTestBase
     {
         var id = 2385942;
 
-        var response = await Client.GetAsync($"/users/{id}");
+        var response = await ApiClientWithRoleSuperAdmin.GetAsync($"/users/{id}");
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
     }
@@ -145,7 +145,7 @@ public class UserEndpointTests : IntegrationTestBase
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-            var response = await Client.PostAsync("/users", jsonContent);
+            var response = await ApiClientWithRoleSuperAdmin.PostAsync("/users", jsonContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -191,7 +191,7 @@ public class UserEndpointTests : IntegrationTestBase
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-            var response = await Client.PostAsync("/users", jsonContent);
+            var response = await ApiClientWithRoleSuperAdmin.PostAsync("/users", jsonContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -224,7 +224,7 @@ public class UserEndpointTests : IntegrationTestBase
 
         var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-        var response = await Client.PostAsync("/users", jsonContent);
+        var response = await ApiClientWithRoleSuperAdmin.PostAsync("/users", jsonContent);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
     }
@@ -261,7 +261,7 @@ public class UserEndpointTests : IntegrationTestBase
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-            var response = await Client.PostAsync("/users", jsonContent);
+            var response = await ApiClientWithRoleSuperAdmin.PostAsync("/users", jsonContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
         }
@@ -290,7 +290,7 @@ public class UserEndpointTests : IntegrationTestBase
 
         var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-        var response = await Client.PostAsync("/users", jsonContent);
+        var response = await ApiClientWithRoleSuperAdmin.PostAsync("/users", jsonContent);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
     }
@@ -333,7 +333,7 @@ public class UserEndpointTests : IntegrationTestBase
             };
             JsonContent updateUserContent = JsonContent.Create(updateUserObject);
 
-            var response = await Client.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+            var response = await ApiClientWithRoleSuperAdmin.PutAsync($"/users/{userInDb.Id}", updateUserContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -394,7 +394,7 @@ public class UserEndpointTests : IntegrationTestBase
             };
             JsonContent updateUserContent = JsonContent.Create(updateUserObject);
 
-            var response = await Client.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+            var response = await ApiClientWithRoleSuperAdmin.PutAsync($"/users/{userInDb.Id}", updateUserContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -450,7 +450,7 @@ public class UserEndpointTests : IntegrationTestBase
             };
             JsonContent updateUserContent = JsonContent.Create(updateUserObject);
 
-            var response = await Client.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+            var response = await ApiClientWithRoleSuperAdmin.PutAsync($"/users/{userInDb.Id}", updateUserContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -501,7 +501,7 @@ public class UserEndpointTests : IntegrationTestBase
             };
             JsonContent updateUserContent = JsonContent.Create(updateUserObject);
 
-            var response = await Client.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+            var response = await ApiClientWithRoleSuperAdmin.PutAsync($"/users/{userInDb.Id}", updateUserContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -540,7 +540,7 @@ public class UserEndpointTests : IntegrationTestBase
         };
         JsonContent updateUserContent = JsonContent.Create(updateUserObject);
 
-        var response = await Client.PutAsync($"/users/{1232131}", updateUserContent);
+        var response = await ApiClientWithRoleSuperAdmin.PutAsync($"/users/{1232131}", updateUserContent);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
     }
@@ -577,7 +577,7 @@ public class UserEndpointTests : IntegrationTestBase
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-            var response = await Client.PostAsync("/users", jsonContent);
+            var response = await ApiClientWithRoleSuperAdmin.PostAsync("/users", jsonContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
         }
@@ -625,7 +625,7 @@ public class UserEndpointTests : IntegrationTestBase
                 };
                 JsonContent updateUserContent = JsonContent.Create(updateUserObject);
 
-                var response = await Client.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+                var response = await ApiClientWithRoleSuperAdmin.PutAsync($"/users/{userInDb.Id}", updateUserContent);
                 Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                 Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
 
@@ -675,7 +675,7 @@ public class UserEndpointTests : IntegrationTestBase
             userInDb = await DbUserGetByEmail(newUser.Email);
             Assert.That(userInDb, Is.Not.EqualTo(null));
 
-            var response = await Client.DeleteAsync($"/users/{userInDb.Id}");
+            var response = await ApiClientWithRoleSuperAdmin.DeleteAsync($"/users/{userInDb.Id}");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -696,7 +696,7 @@ public class UserEndpointTests : IntegrationTestBase
     {
         var id = 2385942;
 
-        var response = await Client.DeleteAsync($"/users/{id}");
+        var response = await ApiClientWithRoleSuperAdmin.DeleteAsync($"/users/{id}");
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
     }

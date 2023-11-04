@@ -18,10 +18,13 @@ namespace friasco_api_integration_tests;
 public class IntegrationTestBase
 {
     protected WebApplicationFactory<Program> Factory { get; private set; }
-    protected HttpClient Client { get; private set; }
     protected IDbTransaction? Transaction { get; private set; }
     protected JsonSerializerOptions DefaultTestingJsonSerializerOptions { get; set; }
     protected string FriascoTestDatabaseString { get; private set; }
+    protected HttpClient ApiClientWithNoAuth { get; private set; }
+    protected HttpClient ApiClientWithRoleUser { get; private set; }
+    protected HttpClient ApiClientWithRoleAdmin { get; private set; }
+    protected HttpClient ApiClientWithRoleSuperAdmin { get; private set; }
 
     public IntegrationTestBase()
     {
@@ -71,31 +74,16 @@ public class IntegrationTestBase
             await context.InitDatabase();
         }
 
-        Client = Factory.CreateClient();
-
-        var userLoginObject = new
-        {
-            Email = "apiTestUser1@example.com",
-            Password = "apiTestUser1Password",
-        };
-        var jsonContent = new StringContent(JsonSerializer.Serialize(userLoginObject), Encoding.UTF8, "application/json");
-
-        var response = await Client.PostAsync("/login", jsonContent);
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
-
-        var contentJsonString = await response.Content.ReadAsStringAsync();
-        var loginResponse = JsonSerializer.Deserialize<LoginResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
-        Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
-        Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
-
-        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
+        await InitializeAllApiClients();
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
-        Client.Dispose();
+        ApiClientWithNoAuth.Dispose();
+        ApiClientWithRoleUser.Dispose();
+        ApiClientWithRoleAdmin.Dispose();
+        ApiClientWithRoleSuperAdmin.Dispose();
         Factory.Dispose();
     }
 
@@ -110,6 +98,39 @@ public class IntegrationTestBase
     }
 
     #region Helpers
+
+    public async Task InitializeAllApiClients()
+    {
+        ApiClientWithNoAuth = Factory.CreateClient();
+        ApiClientWithRoleUser = await CreateAuthenticatedHttpClient("UserRole@example.com", "Password123");
+        ApiClientWithRoleAdmin = await CreateAuthenticatedHttpClient("Admin@example.com", "Password123");
+        ApiClientWithRoleSuperAdmin = await CreateAuthenticatedHttpClient("SuperAdminRole@example.com", "Password123");
+    }
+
+    public async Task<HttpClient> CreateAuthenticatedHttpClient(string userEmail, string userPassword)
+    {
+        var client = Factory.CreateClient();
+
+        var apiUserLoginObject = new
+        {
+            Email = userEmail,
+            Password = userPassword,
+        };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(apiUserLoginObject), Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("/login", jsonContent);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+        var contentJsonString = await response.Content.ReadAsStringAsync();
+        var loginResponse = JsonSerializer.Deserialize<LoginResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+        Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
+        Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
+
+        return client;
+    }
 
     public async Task<int> DbUserCreate(User user)
     {

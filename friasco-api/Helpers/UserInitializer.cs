@@ -11,27 +11,58 @@ public static class UserInitializer
         if (app.Environment.IsDevelopment())
         {
             // TODO: When eventually in a production environment check that this user is not being setup.
-            var apiTestUser1 = new UserCreateRequestModel
+            var userWithUserRole = new UserCreateRequestModel
             {
-                Username = "apiTestUser1",
-                Email = "apiTestUser1@example.com",
-                FirstName = "apiTestUser1First",
-                LastName = "apiTestUser1Last",
-                Role = UserRoleEnum.SuperAdmin,
-                Password = "apiTestUser1Password",
-                ConfirmPassword = "apiTestUser1Password",
+                Username = "UserRole",
+                Email = "UserRole@example.com",
+                FirstName = "UserRoleFirst",
+                LastName = "UserRoleLast",
+                Role = UserRoleEnum.User,
+                Password = "Password123",
+                ConfirmPassword = "Password123",
             };
-            try
+            var userWithAdminRole = new UserCreateRequestModel
             {
-                using (var scope = app.Services.CreateScope())
+                Username = "AdminRole",
+                Email = "Admin@example.com",
+                FirstName = "AdminRoleFirst",
+                LastName = "AdminRoleLast",
+                Role = UserRoleEnum.Admin,
+                Password = "Password123",
+                ConfirmPassword = "Password123",
+            };
+            var userWithSuperAdminRole = new UserCreateRequestModel
+            {
+                Username = "SuperAdminRole",
+                Email = "SuperAdminRole@example.com",
+                FirstName = "SuperAdminRoleFirst",
+                LastName = "SuperAdminRoleLast",
+                Role = UserRoleEnum.SuperAdmin,
+                Password = "Password123",
+                ConfirmPassword = "Password123",
+            };
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+
+                try
                 {
-                    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-                    await userService.Create(apiTestUser1);
+                    await userService.Create(userWithUserRole);
                 }
-            }
-            catch (Exception)
-            {
-                // Do nothing...
+                catch (Exception) { }
+
+                try
+                {
+                    await userService.Create(userWithAdminRole);
+                }
+                catch (Exception) { }
+
+                try
+                {
+                    await userService.Create(userWithSuperAdminRole);
+                }
+                catch (Exception) { }
             }
         }
     }
