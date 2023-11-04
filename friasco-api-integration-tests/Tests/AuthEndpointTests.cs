@@ -1,8 +1,8 @@
 ﻿namespace friasco_api_integration_tests.Tests;
 
-public partial class AuthenticationTests : IntegrationTestBase
+public partial class AuthEndpointTests : IntegrationTestBase
 {
-    // TODO: Test all user route authentication
+    // TODO: Test all user route authentication (do this as passing in test parameters and changing tests to suit)
     // GetAll
     // GetById
     // Create
