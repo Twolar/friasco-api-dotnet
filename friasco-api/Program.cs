@@ -69,13 +69,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Policy Authorization
 builder.Services.AddAuthorization(options =>
 {
-    // Guest Policy
-    options.AddPolicy(nameof(UserRoleEnum.Guest), policy => policy.RequireRole(
-        nameof(UserRoleEnum.Guest),
-        nameof(UserRoleEnum.User),
-        nameof(UserRoleEnum.Admin),
-        nameof(UserRoleEnum.SuperAdmin)
-    ));
     // User Policy
     options.AddPolicy(nameof(UserRoleEnum.User), policy => policy.RequireRole(
         nameof(UserRoleEnum.User),
