@@ -1,11 +1,12 @@
-﻿using AutoMapper;
-using friasco_api;
+﻿using System.Security.Claims;
+using AutoMapper;
 using friasco_api.Data.Entities;
 using friasco_api.Data.Repositories;
 using friasco_api.Enums;
 using friasco_api.Helpers;
 using friasco_api.Models;
 using friasco_api.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -18,6 +19,7 @@ public class UserServiceTests
     private Mock<IMapper> _mapperMock;
     private Mock<IUserRepository> _userRepositoryMock;
     private Mock<IBCryptWrapper> _bcryptWrapperMock;
+    private Mock<IHttpContextAccessor> _httpContextAccessorMock;
     private IUserService _userService;
 
     [SetUp]
@@ -27,7 +29,8 @@ public class UserServiceTests
         _userRepositoryMock = new Mock<IUserRepository>();
         _mapperMock = new Mock<IMapper>();
         _bcryptWrapperMock = new Mock<IBCryptWrapper>();
-        _userService = new UserService(_loggerMock.Object, _mapperMock.Object, _userRepositoryMock.Object, _bcryptWrapperMock.Object);
+        _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+        _userService = new UserService(_loggerMock.Object, _mapperMock.Object, _userRepositoryMock.Object, _bcryptWrapperMock.Object, _httpContextAccessorMock.Object);
     }
 
     [Test]
@@ -99,6 +102,7 @@ public class UserServiceTests
         _userRepositoryMock.Setup(x => x.Create(userToCreate)).ReturnsAsync(1);
         _mapperMock.Setup(x => x.Map<User>(userCreateRequestModel)).Returns(userToCreate);
         _bcryptWrapperMock.Setup(x => x.HashPassword(userCreateRequestModel.Password)).Returns(userToCreate.PasswordHash);
+        _httpContextAccessorMock.Setup(x => x.HttpContext.User.Claims).Returns(new List<Claim>());
 
         var rowsAffected = await _userService.Create(userCreateRequestModel);
 
@@ -165,7 +169,7 @@ public class UserServiceTests
         _userRepositoryMock.Setup(x => x.Update(userToUpdate)).ReturnsAsync(1);
         _mapperMock.Setup(x => x.Map(userUpdateRequestModel, userToUpdate)).Returns(userToUpdate);
         _bcryptWrapperMock.Setup(x => x.HashPassword(userUpdateRequestModel.Password)).Returns(userToUpdate.PasswordHash);
-
+        _httpContextAccessorMock.Setup(x => x.HttpContext.User.Claims).Returns(new List<Claim>());
 
         var rowsAffected = await _userService.Update(userToUpdate.Id, userUpdateRequestModel);
 
