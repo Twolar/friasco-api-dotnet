@@ -25,6 +25,12 @@ public class IntegrationTestBase
     protected HttpClient ApiClientWithRoleUser { get; private set; }
     protected HttpClient ApiClientWithRoleAdmin { get; private set; }
     protected HttpClient ApiClientWithRoleSuperAdmin { get; private set; }
+    protected static List<string> ApiClientNames = new List<string> {
+        nameof(ApiClientWithNoAuth),
+        nameof(ApiClientWithRoleUser),
+        nameof(ApiClientWithRoleAdmin),
+        nameof(ApiClientWithRoleSuperAdmin)
+    };
 
     public IntegrationTestBase()
     {
