@@ -20,6 +20,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = nameof(UserRoleEnum.Admin))]
     public async Task<IActionResult> GetAll()
     {
         _logger.LogDebug("UsersController::GetAll");
@@ -41,6 +42,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = nameof(UserRoleEnum.Admin))]
     public async Task<IActionResult> Create(UserCreateRequestModel model)
     {
         _logger.Log(LogLevel.Debug, "UsersController::Create");
@@ -53,6 +55,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = nameof(UserRoleEnum.Admin))]
     public async Task<IActionResult> Update(int id, UserUpdateRequestModel model)
     {
         _logger.LogDebug($"UsersController::Update id: {id}");
@@ -65,6 +68,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = nameof(UserRoleEnum.Admin))]
     public async Task<IActionResult> Delete(int id)
     {
         _logger.LogDebug($"UsersController::Delete id: {id}");
