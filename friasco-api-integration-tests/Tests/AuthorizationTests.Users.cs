@@ -7,7 +7,7 @@ using friasco_api.Enums;
 
 namespace friasco_api_integration_tests.Tests;
 
-public class AuthorizationTests : IntegrationTestBase
+public partial class AuthorizationTests : IntegrationTestBase
 {
     [Test]
     [TestCaseSource(nameof(ApiClientNames))]
@@ -247,11 +247,4 @@ public class AuthorizationTests : IntegrationTestBase
             }
         }
     }
-
-    // Leaving here for now decide where to put them, need to test:
-    // Login
-    // Register (CreateUser)
-    // Tiered based role auth, i.e
-    //      If user is superadmin then should have access to everything below this
-    //      If user is admin should have admin and below, but not superadmin
 }
