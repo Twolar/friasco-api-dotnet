@@ -138,7 +138,7 @@ public class UserEndpointTests : IntegrationTestBase
                 Email = "User1@example.com",
                 FirstName = "User1First",
                 LastName = "User1Last",
-                Role = UserRoleEnum.User,
+                Role = UserRoleEnum.SuperAdmin,
                 Password = "Password123",
                 ConfirmPassword = "Password123"
             };
@@ -157,6 +157,49 @@ public class UserEndpointTests : IntegrationTestBase
             Assert.That(userInDb.FirstName, Is.EqualTo(userCreateJsonObject.FirstName));
             Assert.That(userInDb.LastName, Is.EqualTo(userCreateJsonObject.LastName));
             Assert.That(userInDb.Role, Is.EqualTo(userCreateJsonObject.Role));
+            Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(null));
+        }
+        finally
+        {
+            if (userInDb != null)
+            {
+                await DbUserDeleteById(userInDb.Id);
+            }
+        }
+    }
+
+    [Test]
+    public async Task Users_Create_Succeeds_WithUserRoleDefaulted_WhenApiClientNotSuperAdmin()
+    {
+        User? userInDb = null;
+
+        try
+        {
+            var userCreateJsonObject = new
+            {
+                Username = "User1",
+                Email = "User1@example.com",
+                FirstName = "User1First",
+                LastName = "User1Last",
+                Role = UserRoleEnum.SuperAdmin,
+                Password = "Password123",
+                ConfirmPassword = "Password123"
+            };
+
+            var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
+
+            var response = await ApiClientWithRoleAdmin.PostAsync("/users", jsonContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            userInDb = await DbUserGetByEmail(userCreateJsonObject.Email);
+
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+            Assert.That(userInDb.Username, Is.EqualTo(userCreateJsonObject.Username));
+            Assert.That(userInDb.Email, Is.EqualTo(userCreateJsonObject.Email));
+            Assert.That(userInDb.FirstName, Is.EqualTo(userCreateJsonObject.FirstName));
+            Assert.That(userInDb.LastName, Is.EqualTo(userCreateJsonObject.LastName));
+            Assert.That(userInDb.Role, Is.EqualTo(UserRoleEnum.User));
             Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(null));
         }
         finally
@@ -295,6 +338,8 @@ public class UserEndpointTests : IntegrationTestBase
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(false));
     }
 
+
+
     #endregion
 
     #region Users Update Tests
@@ -419,7 +464,7 @@ public class UserEndpointTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task Users_Create_Succeeds_WhenPasswordsNotProvided()
+    public async Task Users_Update_Succeeds_WhenPasswordsNotProvided()
     {
         User? userInDb = null;
         var newUser = new User
@@ -514,6 +559,64 @@ public class UserEndpointTests : IntegrationTestBase
             Assert.That(userInDb.LastName, Is.EqualTo(newUser.LastName));
             Assert.That(userInDb.Role, Is.EqualTo(newUser.Role));
             Assert.That(userInDb.PasswordHash, Is.EqualTo(newUser.PasswordHash));
+        }
+        finally
+        {
+            if (userInDb != null)
+            {
+                await DbUserDeleteById(userInDb.Id);
+
+            }
+        }
+    }
+
+    [Test]
+    public async Task Users_Update_Succeeds_WithUserRoleUnchanged_WhenApiClientNotSuperAdmin()
+    {
+        User? userInDb = null;
+        var newUser = new User
+        {
+            Username = "User1",
+            Email = "uusUser1@example.com",
+            FirstName = "User1First",
+            LastName = "User1Last",
+            Role = UserRoleEnum.User,
+            PasswordHash = "PasswordHash123",
+        };
+
+        try
+        {
+            await DbUserCreate(newUser);
+
+            userInDb = await DbUserGetByEmail(newUser.Email);
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+            var userInDbPasswordHashBeforeUpdate = userInDb.PasswordHash;
+
+            var updateUserObject = new
+            {
+                Username = "updatedUser1",
+                Email = "uusUpdatedUser1@example.com",
+                FirstName = "updatedUser1First",
+                LastName = "updatedUser1Last",
+                Role = UserRoleEnum.SuperAdmin,
+                Password = "updatedPasswordHash123",
+                ConfirmPassword = "updatedPasswordHash123",
+            };
+            JsonContent updateUserContent = JsonContent.Create(updateUserObject);
+
+            var response = await ApiClientWithRoleAdmin.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            userInDb = await DbUserGetById(userInDb.Id);
+
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+            Assert.That(userInDb.Username, Is.EqualTo(updateUserObject.Username));
+            Assert.That(userInDb.Email, Is.EqualTo(updateUserObject.Email));
+            Assert.That(userInDb.FirstName, Is.EqualTo(updateUserObject.FirstName));
+            Assert.That(userInDb.LastName, Is.EqualTo(updateUserObject.LastName));
+            Assert.That(userInDb.Role, Is.EqualTo(newUser.Role));
+            Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(userInDbPasswordHashBeforeUpdate));
         }
         finally
         {

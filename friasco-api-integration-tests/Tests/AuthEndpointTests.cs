@@ -10,7 +10,7 @@ namespace friasco_api_integration_tests.Tests;
 public class AuthEndpointTests : IntegrationTestBase
 {
     [Test]
-    public async Task Auth_Login_ReturnsOkResult_WithToken()
+    public async Task Auth_Login_Succeeds_WithTokenReturned()
     {
         var apiUserLoginObject = new
         {
@@ -30,7 +30,7 @@ public class AuthEndpointTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task Auth_Register_ReturnsOkResult_WithToken()
+    public async Task Auth_Register_Succeeds_WithTokenReturned()
     {
         User? userInDb = null;
 
@@ -66,6 +66,102 @@ public class AuthEndpointTests : IntegrationTestBase
             Assert.That(userInDb.FirstName, Is.EqualTo(userCreateJsonObject.FirstName));
             Assert.That(userInDb.LastName, Is.EqualTo(userCreateJsonObject.LastName));
             Assert.That(userInDb.Role, Is.EqualTo(userCreateJsonObject.Role));
+            Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(null));
+        }
+        finally
+        {
+            if (userInDb != null)
+            {
+                await DbUserDeleteById(userInDb.Id);
+            }
+        }
+    }
+
+    [Test]
+    public async Task Auth_Register_Succeeds_WithUserRoleDefaulted_WhenApiClientNotSuperAdmin()
+    {
+        User? userInDb = null;
+
+        try
+        {
+            var userCreateJsonObject = new
+            {
+                Username = "User1",
+                Email = "User1@example.com",
+                FirstName = "User1First",
+                LastName = "User1Last",
+                Role = UserRoleEnum.SuperAdmin,
+                Password = "Password123",
+                ConfirmPassword = "Password123"
+            };
+
+            var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
+
+            var response = await ApiClientWithRoleAdmin.PostAsync("/register", jsonContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            var contentJsonString = await response.Content.ReadAsStringAsync();
+            var registerResponse = JsonSerializer.Deserialize<RegisterResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+            Assert.That(registerResponse.Token, Is.Not.EqualTo(string.Empty));
+            Assert.That(registerResponse.Token, Is.Not.EqualTo(null));
+
+            userInDb = await DbUserGetByEmail(userCreateJsonObject.Email);
+
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+            Assert.That(userInDb.Username, Is.EqualTo(userCreateJsonObject.Username));
+            Assert.That(userInDb.Email, Is.EqualTo(userCreateJsonObject.Email));
+            Assert.That(userInDb.FirstName, Is.EqualTo(userCreateJsonObject.FirstName));
+            Assert.That(userInDb.LastName, Is.EqualTo(userCreateJsonObject.LastName));
+            Assert.That(userInDb.Role, Is.EqualTo(UserRoleEnum.User));
+            Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(null));
+        }
+        finally
+        {
+            if (userInDb != null)
+            {
+                await DbUserDeleteById(userInDb.Id);
+            }
+        }
+    }
+
+    [Test]
+    public async Task Auth_Register_Succeeds_WithUserRoleDefaulted_WhenApiClientIsUnauthenticated()
+    {
+        User? userInDb = null;
+
+        try
+        {
+            var userCreateJsonObject = new
+            {
+                Username = "User1",
+                Email = "User1@example.com",
+                FirstName = "User1First",
+                LastName = "User1Last",
+                Role = UserRoleEnum.Admin,
+                Password = "Password123",
+                ConfirmPassword = "Password123"
+            };
+
+            var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
+
+            var response = await ApiClientWithNoAuth.PostAsync("/register", jsonContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            var contentJsonString = await response.Content.ReadAsStringAsync();
+            var registerResponse = JsonSerializer.Deserialize<RegisterResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+            Assert.That(registerResponse.Token, Is.Not.EqualTo(string.Empty));
+            Assert.That(registerResponse.Token, Is.Not.EqualTo(null));
+
+            userInDb = await DbUserGetByEmail(userCreateJsonObject.Email);
+
+            Assert.That(userInDb, Is.Not.EqualTo(null));
+            Assert.That(userInDb.Username, Is.EqualTo(userCreateJsonObject.Username));
+            Assert.That(userInDb.Email, Is.EqualTo(userCreateJsonObject.Email));
+            Assert.That(userInDb.FirstName, Is.EqualTo(userCreateJsonObject.FirstName));
+            Assert.That(userInDb.LastName, Is.EqualTo(userCreateJsonObject.LastName));
+            Assert.That(userInDb.Role, Is.EqualTo(UserRoleEnum.User));
             Assert.That(userInDb.PasswordHash, Is.Not.EqualTo(null));
         }
         finally

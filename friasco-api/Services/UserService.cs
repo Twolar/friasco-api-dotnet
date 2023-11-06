@@ -1,6 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using friasco_api.Data.Entities;
 using friasco_api.Data.Repositories;
+using friasco_api.Enums;
 using friasco_api.Helpers;
 using friasco_api.Models;
 
@@ -21,13 +23,15 @@ public class UserService : IUserService
     private readonly IMapper _mapper;
     private IUserRepository _userRepository;
     private readonly IBCryptWrapper _bcryptWrapper;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public UserService(ILogger<IUserService> logger, IMapper mapper, IUserRepository userRepository, IBCryptWrapper bcryptWrapper)
+    public UserService(ILogger<IUserService> logger, IMapper mapper, IUserRepository userRepository, IBCryptWrapper bcryptWrapper, IHttpContextAccessor httpContextAccessor)
     {
         _logger = logger;
         _mapper = mapper;
         _userRepository = userRepository;
         _bcryptWrapper = bcryptWrapper;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<IEnumerable<User>> GetAll()
@@ -57,6 +61,13 @@ public class UserService : IUserService
         if (await _userRepository.GetByEmail(model.Email!) != null)
         {
             throw new AppException($"User with the email [{model.Email}] already exists");
+        }
+
+        var apiClientRole = GetApiClientRole();
+        if (apiClientRole != UserRoleEnum.SuperAdmin)
+        {
+            // Default user role if api client is not a super admin
+            model.Role = UserRoleEnum.User;
         }
 
         var user = _mapper.Map<User>(model);
@@ -89,9 +100,11 @@ public class UserService : IUserService
 
         }
 
-        if (model.Role == null)
+        var apiClientRole = GetApiClientRole();
+        if (model.Role == null || (apiClientRole != UserRoleEnum.SuperAdmin))
         {
             // Stop role defaulting to 0 on an empty request
+            // Or stop role being updated if api client is not SuperAdmin
             model.Role = user.Role;
         }
 
@@ -121,5 +134,27 @@ public class UserService : IUserService
         var rowsAffectedResult = await _userRepository.Delete(id);
 
         return rowsAffectedResult;
+    }
+
+    private UserRoleEnum? GetApiClientRole()
+    {
+        var claims = _httpContextAccessor.HttpContext.User.Claims;
+        var roleClaim = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+
+        if (roleClaim != null)
+        {
+            var role = roleClaim.Value;
+            switch (role)
+            {
+                case nameof(UserRoleEnum.User):
+                    return UserRoleEnum.User;
+                case nameof(UserRoleEnum.Admin):
+                    return UserRoleEnum.Admin;
+                case nameof(UserRoleEnum.SuperAdmin):
+                    return UserRoleEnum.SuperAdmin;
+            }
+        }
+
+        return null;
     }
 }
