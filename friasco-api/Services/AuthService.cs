@@ -87,7 +87,7 @@ public class AuthService : IAuthService
         {
             Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
             Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
-            Expires = DateTime.UtcNow.AddHours(tokenExpiryAsHours),
+            Expires = DateTime.UtcNow.AddHours(tokenExpiryAsHours), // TODO: Change this to be a smaller time period
             SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256Signature),
             Subject = new ClaimsIdentity(claims)
         };

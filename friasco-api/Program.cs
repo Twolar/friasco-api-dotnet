@@ -112,9 +112,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseCors(x => x
-    .AllowAnyOrigin()
+    .WithOrigins("http://localhost:8001", "localhost:8001")
     .AllowAnyMethod()
-    .AllowAnyHeader());
+    .AllowAnyHeader()
+    .AllowCredentials());
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
