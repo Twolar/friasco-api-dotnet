@@ -72,7 +72,9 @@ public class UserService : IUserService
 
         var user = _mapper.Map<User>(model);
 
-        user.PasswordHash = _bcryptWrapper.HashPassword(model.Password);
+        user.PasswordHash = _bcryptWrapper.HashPassword(model.Password!);
+
+        user.Guid = Guid.NewGuid();
 
         var rowsAffectedResult = await _userRepository.Create(user);
 

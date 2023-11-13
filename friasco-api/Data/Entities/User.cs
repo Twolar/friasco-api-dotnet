@@ -13,5 +13,8 @@ public class User
     public UserRoleEnum Role { get; set; }
 
     [JsonIgnore]
+    public Guid Guid { get; set; }
+
+    [JsonIgnore]
     public string? PasswordHash { get; set; }
 }

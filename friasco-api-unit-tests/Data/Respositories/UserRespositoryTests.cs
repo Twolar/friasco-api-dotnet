@@ -30,8 +30,8 @@ public class UserRespositoryTests
     {
         var expectedUsers = new List<User>
         {
-            new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User },
-            new User { Id = 2, Username = "User2", Email = "user2@example.com", FirstName = "user2First", LastName = "user2Last", Role = UserRoleEnum.User }
+            new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() },
+            new User { Id = 2, Username = "User2", Email = "user2@example.com", FirstName = "user2First", LastName = "user2Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() }
         };
         _mockDapperWrapper.Setup(x => x.QueryAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>())).ReturnsAsync(expectedUsers);
 
@@ -45,7 +45,7 @@ public class UserRespositoryTests
     public async Task GetById_ReturnsUserById()
     {
         var userId = 1;
-        var expectedUser = new User { Id = userId, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var expectedUser = new User { Id = userId, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         _mockDapperWrapper.Setup(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(expectedUser);
 
         var user = await _userRepository.GetById(userId);
@@ -58,7 +58,7 @@ public class UserRespositoryTests
     public async Task GetByEmail_ReturnsUserByEmail()
     {
         var userEmail = "user1@example.com";
-        var expectedUser = new User { Id = 1, Username = "User1", Email = userEmail, FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var expectedUser = new User { Id = 1, Username = "User1", Email = userEmail, FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         _mockDapperWrapper.Setup(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(expectedUser);
 
         var user = await _userRepository.GetByEmail(userEmail);
@@ -70,7 +70,7 @@ public class UserRespositoryTests
     [Test]
     public async Task Create_CreatesUser_ReturnsOneRowAffected()
     {
-        var userToCreate = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var userToCreate = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         _mockDapperWrapper.Setup(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), userToCreate)).ReturnsAsync(1);
 
         var rowsAffected = await _userRepository.Create(userToCreate);
@@ -82,7 +82,7 @@ public class UserRespositoryTests
     [Test]
     public async Task Update_UpdatesUser_ReturnsOneRowAffected()
     {
-        var userToUpdate = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var userToUpdate = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         _mockDapperWrapper.Setup(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), userToUpdate)).ReturnsAsync(1);
 
         var rowsAffected = await _userRepository.Update(userToUpdate);
@@ -94,7 +94,7 @@ public class UserRespositoryTests
     [Test]
     public async Task Delete_DeletesUser_ReturnsOneRowAffected()
     {
-        var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         var objectParams = new { id = userToDelete.Id };
         _mockDapperWrapper.Setup(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(1);
 

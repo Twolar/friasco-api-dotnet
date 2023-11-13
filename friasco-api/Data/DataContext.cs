@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Dapper;
+using friasco_api.Helpers;
 
 namespace friasco_api.Data;
 
@@ -27,7 +28,12 @@ public class DataContext : IDataContext
     {
         using (var connection = _dbConnectionFunc())
         {
+            await connection.ExecuteAsync("PRAGMA foreign_keys = ON;");
+
+            SqlMapper.AddTypeHandler(new GuidTypeHandlerHelper());
+
             await _initUsers();
+            await _initRefreshTokens();
 
             async Task _initUsers()
             {
@@ -35,12 +41,33 @@ public class DataContext : IDataContext
                     CREATE TABLE IF NOT EXISTS 
                     Users (
                         Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                        Username TEXT,
+                        Username TEXT UNIQUE,
                         FirstName TEXT,
                         LastName TEXT,
-                        Email TEXT,
+                        Email TEXT UNIQUE,
                         Role INTEGER,
-                        PasswordHash TEXT
+                        PasswordHash TEXT,
+                        Guid BLOB UNIQUE NOT NULL
+                    );
+                ";
+
+                await connection.ExecuteAsync(sql);
+            }
+
+            async Task _initRefreshTokens()
+            {
+                var sql = @"
+                    CREATE TABLE IF NOT EXISTS 
+                    RefreshTokens (
+                        Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        UserGuid BLOB,
+                        JwtId TEXT,
+                        Token TEXT,
+                        ExpirationDate DATETIME,
+                        CreatedDate DATETIME,
+                        IsUsed BOOLEAN NOT NULL DEFAULT 0 CHECK (IsUsed IN (0, 1)),
+                        IsValid BOOLEAN NOT NULL DEFAULT 1 CHECK (IsValid IN (0, 1)),
+                        FOREIGN KEY(UserGuid) REFERENCES Users(Guid) ON DELETE CASCADE
                     );
                 ";
 

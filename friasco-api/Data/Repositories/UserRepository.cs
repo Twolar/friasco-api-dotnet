@@ -75,7 +75,8 @@ public class UserRepository : IUserRepository
                     LastName,
                     Email,
                     Role,
-                    PasswordHash
+                    PasswordHash,
+                    Guid
                 )
                 VALUES 
                 (
@@ -84,7 +85,8 @@ public class UserRepository : IUserRepository
                     @LastName,
                     @Email,
                     @Role,
-                    @PasswordHash
+                    @PasswordHash,
+                    @Guid
                 )
             ";
             return await _dapperWrapper.ExecuteAsync(connection, sql, user);

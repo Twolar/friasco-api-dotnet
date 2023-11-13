@@ -38,8 +38,8 @@ public class UserServiceTests
     {
         var expectedUsers = new List<User>
         {
-            new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User },
-            new User { Id = 2, Username = "User2", Email = "user2@example.com", FirstName = "user2First", LastName = "user2Last", Role = UserRoleEnum.User }
+            new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() },
+            new User { Id = 2, Username = "User2", Email = "user2@example.com", FirstName = "user2First", LastName = "user2Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() }
         };
         _userRepositoryMock.Setup(x => x.GetAll()).ReturnsAsync(expectedUsers);
 
@@ -53,7 +53,7 @@ public class UserServiceTests
     public async Task GetById_ReturnsUserById()
     {
         var userId = 1;
-        var expectedUser = new User { Id = userId, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var expectedUser = new User { Id = userId, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         _userRepositoryMock.Setup(x => x.GetById(userId)).ReturnsAsync(expectedUser);
 
         var user = await _userService.GetById(userId);
@@ -65,7 +65,7 @@ public class UserServiceTests
     [Test]
     public async Task GetById_ThrowsExceptionIfUserDoesNotExistAlready()
     {
-        var expectedUser = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var expectedUser = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         _userRepositoryMock.Setup(x => x.GetById(expectedUser.Id)).ReturnsAsync((User)null);
 
         var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.GetById(expectedUser.Id));
@@ -95,7 +95,8 @@ public class UserServiceTests
             FirstName = userCreateRequestModel.FirstName,
             LastName = userCreateRequestModel.LastName,
             Role = userCreateRequestModel.Role,
-            PasswordHash = "hashedPassword123"
+            PasswordHash = "hashedPassword123",
+            Guid = Guid.NewGuid()
         };
 
         _userRepositoryMock.Setup(x => x.GetByEmail(userCreateRequestModel.Email)).ReturnsAsync((User)null);
@@ -249,7 +250,7 @@ public class UserServiceTests
     [Test]
     public async Task Delete_DeletesUser_ReturnsOneRowAffected()
     {
-        var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         _userRepositoryMock.Setup(x => x.GetById(userToDelete.Id)).ReturnsAsync(userToDelete);
         _userRepositoryMock.Setup(x => x.Delete(userToDelete.Id)).ReturnsAsync(1);
 
@@ -262,7 +263,7 @@ public class UserServiceTests
     [Test]
     public async Task Delete_ThrowsExceptionIfUserDoesNotExistAlready()
     {
-        var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User };
+        var userToDelete = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
         _userRepositoryMock.Setup(x => x.GetById(userToDelete.Id)).ReturnsAsync((User)null);
 
         var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.Delete(userToDelete.Id));
