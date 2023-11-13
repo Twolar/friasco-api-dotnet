@@ -25,7 +25,8 @@ public class MapperProfileTests
         var configuration = new MapperConfiguration(cfg =>
             cfg.CreateMap<UserCreateRequestModel, User>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()));
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+                .ForMember(dest => dest.Guid, opt => opt.Ignore()));
 
         // Assert convention of properties in Source matching Destination.
         configuration.AssertConfigurationIsValid();
@@ -38,7 +39,8 @@ public class MapperProfileTests
         var configuration = new MapperConfiguration(cfg =>
             cfg.CreateMap<UserUpdateRequestModel, User>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()));
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+                .ForMember(dest => dest.Guid, opt => opt.Ignore()));
 
         // Assert convention of properties in Source matching Destination.
         configuration.AssertConfigurationIsValid();

@@ -4,9 +4,10 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Dapper;
 using friasco_api.Data;
 using friasco_api.Data.Entities;
+using friasco_api.Data.Repositories;
+using friasco_api.Helpers;
 using friasco_api_integration_tests.Helpers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -109,7 +110,7 @@ public class IntegrationTestBase
     {
         ApiClientWithNoAuth = Factory.CreateClient();
         ApiClientWithRoleUser = await CreateAuthenticatedHttpClient("UserRole@example.com", "Password123");
-        ApiClientWithRoleAdmin = await CreateAuthenticatedHttpClient("Admin@example.com", "Password123");
+        ApiClientWithRoleAdmin = await CreateAuthenticatedHttpClient("AdminRole@example.com", "Password123");
         ApiClientWithRoleSuperAdmin = await CreateAuthenticatedHttpClient("SuperAdminRole@example.com", "Password123");
     }
 
@@ -138,42 +139,21 @@ public class IntegrationTestBase
         return client;
     }
 
-    public async Task<int> DbUserCreate(User user)
+    public async Task DbUserCreate(User user)
     {
         using (var scope = Factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
-            var connection = context.CreateConnection();
-            connection.Open();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+            var bcryptWrapper = scope.ServiceProvider.GetRequiredService<IBCryptWrapper>();
 
             try
             {
-                var sql = @"
-                    INSERT INTO Users 
-                    (
-                        Username,
-                        FirstName,
-                        LastName,
-                        Email,
-                        Role,
-                        PasswordHash
-                    )
-                    VALUES 
-                    (
-                        @Username,
-                        @FirstName,
-                        @LastName,
-                        @Email,
-                        @Role,
-                        @PasswordHash
-                    )
-                ";
-                return await connection.ExecuteAsync(sql, user);
+                user.Guid = Guid.NewGuid();
+                user.PasswordHash = bcryptWrapper.HashPassword(user.PasswordHash);
+                await userRepository.Create(user);
             }
             finally
             {
-                connection.Close();
-                connection.Dispose();
             }
         }
     }
@@ -182,22 +162,14 @@ public class IntegrationTestBase
     {
         using (var scope = Factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
-            var connection = context.CreateConnection();
-            connection.Open();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             try
             {
-                var sql = @"
-                    SELECT * FROM Users
-                    WHERE Id = @id
-                ";
-                return await connection.QueryFirstOrDefaultAsync<User>(sql, new { id });
+                return await userRepository.GetById(id);
             }
             finally
             {
-                connection.Close();
-                connection.Dispose();
             }
         }
     }
@@ -206,22 +178,14 @@ public class IntegrationTestBase
     {
         using (var scope = Factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
-            var connection = context.CreateConnection();
-            connection.Open();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             try
             {
-                var sql = @"
-                    SELECT * FROM Users
-                    WHERE Email = @email
-                ";
-                return await connection.QueryFirstOrDefaultAsync<User>(sql, new { email });
+                return await userRepository.GetByEmail(email);
             }
             finally
             {
-                connection.Close();
-                connection.Dispose();
             }
         }
     }
@@ -230,22 +194,18 @@ public class IntegrationTestBase
     {
         using (var scope = Factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
-            var connection = context.CreateConnection();
-            connection.Open();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             try
             {
-                var sql = @"
-                    DELETE FROM Users 
-                    WHERE Id = @id
-                ";
-                await connection.ExecuteAsync(sql, new { id });
+                var userToDelete = userRepository.GetById(id);
+                if (userToDelete != null)
+                {
+                    await userRepository.Delete(id);
+                }
             }
             finally
             {
-                connection.Close();
-                connection.Dispose();
             }
         }
     }
@@ -254,22 +214,18 @@ public class IntegrationTestBase
     {
         using (var scope = Factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<IDataContext>();
-            var connection = context.CreateConnection();
-            connection.Open();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             try
             {
-                var sql = @"
-                    DELETE FROM Users 
-                    WHERE Email = @email
-                ";
-                await connection.QueryFirstOrDefaultAsync<User>(sql, new { email });
+                var userToDelete = await userRepository.GetByEmail(email);
+                if (userToDelete != null)
+                {
+                    await userRepository.Delete(userToDelete.Id);
+                }
             }
             finally
             {
-                connection.Close();
-                connection.Dispose();
             }
         }
     }

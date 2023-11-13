@@ -1,6 +1,6 @@
-﻿using friasco_api.Enums;
-using friasco_api.Models;
-using friasco_api.Services;
+﻿using friasco_api.Data.Entities;
+using friasco_api.Data.Repositories;
+using friasco_api.Enums;
 
 namespace friasco_api.Helpers;
 
@@ -11,58 +11,79 @@ public static class UserInitializer
         if (app.Environment.IsDevelopment())
         {
             // TODO: When eventually in a production environment check that this user is not being setup.
-            var userWithUserRole = new UserCreateRequestModel
+            var userWithUserRole = new User
             {
                 Username = "UserRole",
                 Email = "UserRole@example.com",
                 FirstName = "UserRoleFirst",
                 LastName = "UserRoleLast",
                 Role = UserRoleEnum.User,
-                Password = "Password123",
-                ConfirmPassword = "Password123",
+                Guid = Guid.NewGuid()
             };
-            var userWithAdminRole = new UserCreateRequestModel
+            var userWithAdminRole = new User
             {
                 Username = "AdminRole",
-                Email = "Admin@example.com",
+                Email = "AdminRole@example.com",
                 FirstName = "AdminRoleFirst",
                 LastName = "AdminRoleLast",
                 Role = UserRoleEnum.Admin,
-                Password = "Password123",
-                ConfirmPassword = "Password123",
+                Guid = Guid.NewGuid()
             };
-            var userWithSuperAdminRole = new UserCreateRequestModel
+            var userWithSuperAdminRole = new User
             {
                 Username = "SuperAdminRole",
                 Email = "SuperAdminRole@example.com",
                 FirstName = "SuperAdminRoleFirst",
                 LastName = "SuperAdminRoleLast",
                 Role = UserRoleEnum.SuperAdmin,
-                Password = "Password123",
-                ConfirmPassword = "Password123",
+                Guid = Guid.NewGuid()
             };
 
             using (var scope = app.Services.CreateScope())
             {
-                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+                var bcryptWrapper = scope.ServiceProvider.GetRequiredService<IBCryptWrapper>();
+
+                var passwordForAllUsers = "Password123";
 
                 try
                 {
-                    await userService.Create(userWithUserRole);
+                    if (await userRepository.GetByEmail(userWithUserRole.Email!) == null)
+                    {
+                        userWithUserRole.PasswordHash = bcryptWrapper.HashPassword(passwordForAllUsers);
+                        await userRepository.Create(userWithUserRole);
+                    }
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    // Do nothing...
+                }
 
                 try
                 {
-                    await userService.Create(userWithAdminRole);
+                    if (await userRepository.GetByEmail(userWithAdminRole.Email!) == null)
+                    {
+                        userWithAdminRole.PasswordHash = bcryptWrapper.HashPassword(passwordForAllUsers);
+                        await userRepository.Create(userWithAdminRole);
+                    }
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    // Do nothing...
+                }
 
                 try
                 {
-                    await userService.Create(userWithSuperAdminRole);
+                    if (await userRepository.GetByEmail(userWithSuperAdminRole.Email!) == null)
+                    {
+                        userWithSuperAdminRole.PasswordHash = bcryptWrapper.HashPassword(passwordForAllUsers);
+                        await userRepository.Create(userWithSuperAdminRole);
+                    }
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    // Do nothing...}
+                }
             }
         }
     }
