@@ -19,12 +19,12 @@ public class AuthEndpointTests : IntegrationTestBase
         };
         var jsonContent = new StringContent(JsonSerializer.Serialize(apiUserLoginObject), Encoding.UTF8, "application/json");
 
-        var response = await ApiClientWithRoleSuperAdmin.PostAsync("/login", jsonContent);
+        var response = await ApiClientWithRoleSuperAdmin.PostAsync("/Auth/Login", jsonContent);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
         var contentJsonString = await response.Content.ReadAsStringAsync();
-        var loginResponse = JsonSerializer.Deserialize<LoginResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+        var loginResponse = JsonSerializer.Deserialize<AuthResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
         Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
         Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
     }
@@ -49,12 +49,12 @@ public class AuthEndpointTests : IntegrationTestBase
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-            var response = await ApiClientWithRoleSuperAdmin.PostAsync("/register", jsonContent);
+            var response = await ApiClientWithRoleSuperAdmin.PostAsync("/Auth/Register", jsonContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
             var contentJsonString = await response.Content.ReadAsStringAsync();
-            var registerResponse = JsonSerializer.Deserialize<RegisterResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+            var registerResponse = JsonSerializer.Deserialize<AuthResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
             Assert.That(registerResponse.Token, Is.Not.EqualTo(string.Empty));
             Assert.That(registerResponse.Token, Is.Not.EqualTo(null));
 
@@ -97,12 +97,12 @@ public class AuthEndpointTests : IntegrationTestBase
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-            var response = await ApiClientWithRoleAdmin.PostAsync("/register", jsonContent);
+            var response = await ApiClientWithRoleAdmin.PostAsync("/Auth/Register", jsonContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
             var contentJsonString = await response.Content.ReadAsStringAsync();
-            var registerResponse = JsonSerializer.Deserialize<RegisterResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+            var registerResponse = JsonSerializer.Deserialize<AuthResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
             Assert.That(registerResponse.Token, Is.Not.EqualTo(string.Empty));
             Assert.That(registerResponse.Token, Is.Not.EqualTo(null));
 
@@ -145,12 +145,12 @@ public class AuthEndpointTests : IntegrationTestBase
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-            var response = await ApiClientWithNoAuth.PostAsync("/register", jsonContent);
+            var response = await ApiClientWithNoAuth.PostAsync("/Auth/Register", jsonContent);
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
             var contentJsonString = await response.Content.ReadAsStringAsync();
-            var registerResponse = JsonSerializer.Deserialize<RegisterResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+            var registerResponse = JsonSerializer.Deserialize<AuthResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
             Assert.That(registerResponse.Token, Is.Not.EqualTo(string.Empty));
             Assert.That(registerResponse.Token, Is.Not.EqualTo(null));
 
@@ -172,4 +172,6 @@ public class AuthEndpointTests : IntegrationTestBase
             }
         }
     }
+
+    // TODO: Write tests for Refersh token functionality...
 }

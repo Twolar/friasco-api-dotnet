@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IDapperWrapper, DapperWrapper>();
 builder.Services.AddScoped<IBCryptWrapper, BCryptWrapper>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpContextAccessor();
@@ -53,19 +54,21 @@ var jwtSettings = new JwtSettings
     Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
 };
 builder.Services.AddSingleton(jwtSettings);
+var tokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    ValidIssuer = jwtSettings.Issuer,
+    ValidAudience = jwtSettings.Audience,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+    RoleClaimType = ClaimTypes.Role
+};
+builder.Services.AddSingleton(tokenValidationParameters);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
-            RoleClaimType = ClaimTypes.Role
-        }
+        options.TokenValidationParameters = tokenValidationParameters
     );
 
 // Policy Authorization

@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using friasco_api;
 using friasco_api.Data;
 using friasco_api.Data.Entities;
 using friasco_api.Data.Repositories;
@@ -42,7 +43,8 @@ public class IntegrationTestBase
         Environment.SetEnvironmentVariable("JWT_KEY", "F6MTF6jJ5I013c3tfXd0O+pw5QUsdCv/8v+v1KLTQjlw1amYAsFb9DqNvKLVpsFs");
         Environment.SetEnvironmentVariable("JWT_ISSUER", "TestIssuer");
         Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TestAudience");
-        Environment.SetEnvironmentVariable("TOKEN_EXPIRY_TIME_HOUR", "3");
+        Environment.SetEnvironmentVariable("JWT_EXPIRY_SECONDS", "60");
+        Environment.SetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS", "1");
 
         DefaultTestingJsonSerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
@@ -125,12 +127,12 @@ public class IntegrationTestBase
         };
         var jsonContent = new StringContent(JsonSerializer.Serialize(apiUserLoginObject), Encoding.UTF8, "application/json");
 
-        var response = await client.PostAsync("/login", jsonContent);
+        var response = await client.PostAsync("/Auth/Login", jsonContent);
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
         var contentJsonString = await response.Content.ReadAsStringAsync();
-        var loginResponse = JsonSerializer.Deserialize<LoginResponse>(contentJsonString, DefaultTestingJsonSerializerOptions);
+        var loginResponse = JsonSerializer.Deserialize<AuthResponseModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
         Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
         Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
 
