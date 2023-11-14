@@ -18,30 +18,35 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/login")]
+    [Route("[action]")]
     public async Task<IActionResult> Login(AuthLoginRequestModel model)
     {
         _logger.Log(LogLevel.Debug, "AuthController::Login");
 
-        var userJwtToken = await _authService.Login(model);
+        var authResult = await _authService.Login(model);
 
-        return Ok(new { token = userJwtToken });
+        return Ok(authResult);
     }
 
     [HttpPost]
-    [Route("/register")]
+    [Route("[action]")]
     public async Task<IActionResult> Register(UserCreateRequestModel model)
     {
         _logger.Log(LogLevel.Debug, "AuthController::Register");
 
-        var userJwtToken = await _authService.Register(model);
+        var authResult = await _authService.Register(model);
 
-        return Ok(
-            new
-            {
-                message = "User Created",
-                token = userJwtToken
-            }
-        );
+        return Ok(authResult);
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> Refresh(AuthRefreshRequestModel model)
+    {
+        _logger.Log(LogLevel.Debug, "AuthController::Refresh");
+
+        var authResult = await _authService.Refresh(model);
+
+        return Ok(authResult);
     }
 }

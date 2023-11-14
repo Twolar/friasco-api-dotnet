@@ -20,7 +20,7 @@ public partial class AuthorizationTests : IntegrationTestBase
         };
         var jsonContent = new StringContent(JsonSerializer.Serialize(userLoginObject), Encoding.UTF8, "application/json");
 
-        var url = "/login";
+        var url = "/Auth/Login";
 
         HttpResponseMessage? response;
 
@@ -65,7 +65,7 @@ public partial class AuthorizationTests : IntegrationTestBase
         };
         var jsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
 
-        var url = "/register";
+        var url = "Auth/Register";
 
         HttpResponseMessage? response;
 

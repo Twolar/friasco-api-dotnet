@@ -5,6 +5,7 @@ using friasco_api.Helpers;
 using friasco_api.Models;
 using friasco_api.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 
 namespace friasco_api_unit_tests.Services;
@@ -16,6 +17,8 @@ public class AuthServiceTests
     private Mock<IUserRepository> _userRepositoryMock;
     private Mock<IUserService> _userServiceMock;
     private Mock<IBCryptWrapper> _bcryptWrapperMock;
+    private Mock<TokenValidationParameters> _tokenValidationParameters;
+    private Mock<IAuthRepository> _authRepository;
     private IAuthService _authService;
 
     [SetUp]
@@ -25,12 +28,21 @@ public class AuthServiceTests
         _userRepositoryMock = new Mock<IUserRepository>();
         _userServiceMock = new Mock<IUserService>();
         _bcryptWrapperMock = new Mock<IBCryptWrapper>();
-        _authService = new AuthService(_logger.Object, _userRepositoryMock.Object, _userServiceMock.Object, _bcryptWrapperMock.Object);
+        _tokenValidationParameters = new Mock<TokenValidationParameters>();
+        _authRepository = new Mock<IAuthRepository>();
+        _authService = new AuthService(
+            _logger.Object,
+            _userRepositoryMock.Object,
+            _userServiceMock.Object,
+            _bcryptWrapperMock.Object,
+            _tokenValidationParameters.Object,
+            _authRepository.Object);
 
         Environment.SetEnvironmentVariable("JWT_KEY", "F6MTF6jJ5I013c3tfXd0O+pw5QUsdCv/8v+v1KLTQjlw1amYAsFb9DqNvKLVpsFs");
         Environment.SetEnvironmentVariable("JWT_ISSUER", "TestIssuer");
         Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TestAudience");
-        Environment.SetEnvironmentVariable("TOKEN_EXPIRY_TIME_HOUR", "1");
+        Environment.SetEnvironmentVariable("JWT_EXPIRY_SECONDS", "60");
+        Environment.SetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS", "1");
     }
 
     [Test]
@@ -56,10 +68,10 @@ public class AuthServiceTests
         _userRepositoryMock.Setup(x => x.GetByEmail(userAuthLoginRequestModel.Email)).ReturnsAsync(expectedUser);
         _bcryptWrapperMock.Setup(x => x.Verify(userAuthLoginRequestModel.Password, expectedUser.PasswordHash)).Returns(true);
 
-        var jwtString = await _authService.Login(userAuthLoginRequestModel);
+        var authResult = await _authService.Login(userAuthLoginRequestModel);
 
-        Assert.That(jwtString, Is.Not.EqualTo(null));
-        Assert.That(jwtString.Length, Is.AtLeast(10));
+        Assert.That(authResult.Token, Is.Not.EqualTo(null));
+        Assert.That(authResult.Token.Length, Is.AtLeast(10));
 
         _userRepositoryMock.Verify(x => x.GetByEmail(userAuthLoginRequestModel.Email), Times.Once());
         _bcryptWrapperMock.Verify(x => x.Verify(userAuthLoginRequestModel.Password, expectedUser.PasswordHash), Times.Once);
@@ -126,7 +138,6 @@ public class AuthServiceTests
     [Test]
     public async Task Register_ReturnsToken()
     {
-
         var userCreateRequestModel = new UserCreateRequestModel
         {
             Username = "User1",
@@ -155,15 +166,15 @@ public class AuthServiceTests
 
         _userServiceMock.Setup(x => x.Create(userCreateRequestModel)).ReturnsAsync(1);
         _userRepositoryMock.Setup(x => x.GetByEmail(createdUserAuthLoginRequestModel.Email)).ReturnsAsync(expectedUser);
-        _bcryptWrapperMock.Setup(x => x.Verify(createdUserAuthLoginRequestModel.Password, expectedUser.PasswordHash)).Returns(true);
 
-        var jwtString = await _authService.Register(userCreateRequestModel);
+        var authResult = await _authService.Register(userCreateRequestModel);
 
-        Assert.That(jwtString, Is.Not.EqualTo(null));
-        Assert.That(jwtString.Length, Is.AtLeast(10));
+        Assert.That(authResult.Token, Is.Not.EqualTo(null));
+        Assert.That(authResult.Token.Length, Is.AtLeast(10));
 
         _userServiceMock.Verify(x => x.Create(userCreateRequestModel), Times.Once);
         _userRepositoryMock.Verify(x => x.GetByEmail(userCreateRequestModel.Email), Times.Once());
-        _bcryptWrapperMock.Verify(x => x.Verify(userCreateRequestModel.Password, expectedUser.PasswordHash), Times.Once);
     }
+
+    // TODO: Add refresh token tests
 }

@@ -1,4 +1,5 @@
-﻿using friasco_api.Controllers;
+﻿using friasco_api;
+using friasco_api.Controllers;
 using friasco_api.Models;
 using friasco_api.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ public class AuthControllerTests
     public async Task Login_ReturnsOkResult()
     {
         var model = new AuthLoginRequestModel();
-        _authServiceMock.Setup(x => x.Login(model)).ReturnsAsync("JwtString");
+        _authServiceMock.Setup(x => x.Login(model)).ReturnsAsync(new AuthResponseModel { Token = "JwtString", RefreshToken = "RefreshToken" });
         var result = await _controller.Login(model);
         Assert.IsInstanceOf<OkObjectResult>(result);
     }
@@ -35,8 +36,10 @@ public class AuthControllerTests
     public async Task Register_ReturnsOkResult()
     {
         var model = new UserCreateRequestModel();
-        _authServiceMock.Setup(x => x.Register(model)).ReturnsAsync("JwtString");
+        _authServiceMock.Setup(x => x.Register(model)).ReturnsAsync(new AuthResponseModel { Token = "JwtString", RefreshToken = "RefreshToken" });
         var result = await _controller.Register(model);
         Assert.IsInstanceOf<OkObjectResult>(result);
     }
+
+    // TODO: Add refresh token tests
 }
