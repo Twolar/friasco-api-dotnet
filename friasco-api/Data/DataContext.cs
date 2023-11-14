@@ -62,7 +62,7 @@ public class DataContext : IDataContext
                         Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                         UserGuid BLOB,
                         JwtId TEXT,
-                        Token TEXT,
+                        Token TEXT UNIQUE,
                         ExpirationDate DATETIME,
                         CreatedDate DATETIME,
                         IsUsed BOOLEAN NOT NULL DEFAULT 0 CHECK (IsUsed IN (0, 1)),
