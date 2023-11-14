@@ -61,7 +61,7 @@ public class DataContext : IDataContext
                     RefreshTokens (
                         Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                         UserGuid BLOB,
-                        JwtId TEXT,
+                        JwtId TEXT UNIQUE,
                         Token TEXT UNIQUE,
                         ExpirationDate DATETIME,
                         CreatedDate DATETIME,
