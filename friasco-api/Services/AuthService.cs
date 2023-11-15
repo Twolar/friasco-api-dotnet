@@ -124,10 +124,11 @@ public class AuthService : IAuthService
             throw new AppException("Refresh token does not match JWT"); // TODO: Change so user does not have too much info
         }
 
-        await _authRepository.DeleteRefreshTokenByJwtId(storedRefreshToken.JwtId);
-
         var userId = Convert.ToInt32(tokenClaimsPrinciple.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
-        var user = await _userService.GetById(userId);
+        var user = await _userService.GetById(userId); // TODO: Should this use Repository vs Service?
+
+        // Delete old refresh token as it is about to be rotated to a newly generated one
+        await _authRepository.DeleteRefreshTokenByJwtId(storedRefreshToken.JwtId);
 
         return await GenerateAuthResultForUser(user);
     }
@@ -196,10 +197,11 @@ public class AuthService : IAuthService
             UserGuid = user.Guid,
             CreatedDate = DateTime.UtcNow,
             ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays)
+            // IsUsed defaulted to 0 in DB
+            // IsValid defaulted to 1 in DB
         };
 
-        // Check for old refresh tokens with JwtId & Delete or set them to invalid...
-
+        // Add refresh token to the DB
         await _authRepository.CreateRefreshToken(refreshToken);
 
         return new AuthResponseModel

@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace friasco_api.Controllers;
 
+// TODO: Look at sending refresh token back as a HttpOnly cookie?
+// - Set AllowOrigins in CORs
+// - Maybe SameSite in the future too? (if on same domain?)
+
 [ApiController]
 [Route("[controller]")]
 public class AuthController : ControllerBase
