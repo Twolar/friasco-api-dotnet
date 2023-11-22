@@ -10,7 +10,7 @@ public static class UserInitializer
     {
         if (app.Environment.IsDevelopment())
         {
-            // TODO: When eventually in a production environment check that these users are not being setup.
+            // TODO: Production, When eventually in a production environment check that these users are not being setup.
             var userWithUserRole = new User
             {
                 Username = "UserRole",

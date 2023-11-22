@@ -90,34 +90,34 @@ public class AuthService : IAuthService
         DateTime tokenExpirationDateTime = expirationTime.DateTime;
         if (tokenExpirationDateTime > DateTime.UtcNow)
         {
-            throw new AppException("Token has not expired"); // TODO: Change so user does not have too much info
+            throw new AppException("Token has not expired"); // TODO: Testing, Change so user does not have too much info
         }
 
         var storedRefreshToken = await _authRepository.GetRefreshTokenByToken(refreshToken);
         if (storedRefreshToken == null)
         {
-            throw new AppException("Refresh token does not exist"); // TODO: Change so user does not have too much info
+            throw new AppException("Refresh token does not exist"); // TODO: Testing, Change so user does not have too much info
         }
 
         if (DateTime.UtcNow > storedRefreshToken.ExpirationDate)
         {
-            throw new AppException("Refresh token has expired"); // TODO: Change so user does not have too much info
+            throw new AppException("Refresh token has expired"); // TODO: Testing, Change so user does not have too much info
         }
 
         if (!storedRefreshToken.IsValid)
         {
-            throw new AppException("Refresh token is not valid"); // TODO: Change so user does not have too much info
+            throw new AppException("Refresh token is not valid"); // TODO: Testing, Change so user does not have too much info
         }
 
         if (storedRefreshToken.IsUsed)
         {
-            throw new AppException("Refresh token has been used"); // TODO: Change so user does not have too much info
+            throw new AppException("Refresh token has been used"); // TODO: Testing, Change so user does not have too much info
         }
 
         var jti = tokenClaimsPrinciple.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
         if (storedRefreshToken.JwtId != jti)
         {
-            throw new AppException("Refresh token does not match JWT"); // TODO: Change so user does not have too much info
+            throw new AppException("Refresh token does not match JWT"); // TODO: Testing, Change so user does not have too much info
         }
 
         var userId = Convert.ToInt32(tokenClaimsPrinciple.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
