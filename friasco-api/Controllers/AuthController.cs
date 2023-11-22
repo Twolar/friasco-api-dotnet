@@ -1,12 +1,9 @@
-﻿using friasco_api.Models;
+﻿using friasco_api.Helpers;
+using friasco_api.Models;
 using friasco_api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace friasco_api.Controllers;
-
-// TODO: Look at sending refresh token back as a HttpOnly cookie?
-// - Set AllowOrigins in CORs
-// - Maybe SameSite in the future too? (if on same domain?)
 
 [ApiController]
 [Route("[controller]")]
@@ -29,7 +26,14 @@ public class AuthController : ControllerBase
 
         var authResult = await _authService.Login(model);
 
-        return Ok(authResult);
+        AddAuthCookieToResponse(authResult);
+
+        return Ok(
+            new
+            {
+                token = authResult.Token,
+            }
+        );
     }
 
     [HttpPost]
@@ -40,7 +44,14 @@ public class AuthController : ControllerBase
 
         var authResult = await _authService.Register(model);
 
-        return Ok(authResult);
+        AddAuthCookieToResponse(authResult);
+
+        return Ok(
+            new
+            {
+                token = authResult.Token,
+            }
+        );
     }
 
     [HttpPost]
@@ -49,8 +60,30 @@ public class AuthController : ControllerBase
     {
         _logger.Log(LogLevel.Debug, "AuthController::Refresh");
 
-        var authResult = await _authService.Refresh(model);
+        if (!HttpContext.Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
+        {
+            throw new AppException("No refresh token in auth cookie"); // TODO: Change me
+        }
 
-        return Ok(authResult);
+        var authResult = await _authService.Refresh(model.Token!, refreshToken);
+
+        AddAuthCookieToResponse(authResult);
+
+        return Ok(
+            new
+            {
+                token = authResult.Token,
+            }
+        );
+    }
+
+    private void AddAuthCookieToResponse(AuthResultModel authResult)
+    {
+        // Add cookie with new RefreshToken in the response
+        HttpContext.Response.Cookies.Append("X-Refresh-Token", authResult.RefreshToken, new CookieOptions()
+        {
+            HttpOnly = true,
+            //SameSite = SameSiteMode.Strict // TODO: Disable for testing?
+        });
     }
 }

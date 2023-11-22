@@ -11,15 +11,14 @@ namespace friasco_api.Services;
 
 public interface IAuthService
 {
-    Task<AuthResponseModel> Login(AuthLoginRequestModel model);
-    Task<AuthResponseModel> Refresh(AuthRefreshRequestModel model);
-    Task<AuthResponseModel> Register(UserCreateRequestModel model);
+    Task<AuthResultModel> Login(AuthLoginRequestModel model);
+    Task<AuthResultModel> Register(UserCreateRequestModel model);
+    Task<AuthResultModel> Refresh(string accessToken, string refreshToken);
 }
 
 public class AuthService : IAuthService
 {
     private readonly ILogger<IAuthService> _logger;
-    private readonly IUserRepository _userRepository;
     private readonly IUserService _userService;
     private readonly IBCryptWrapper _bcryptWrapper;
     private readonly TokenValidationParameters _tokenValidationParameters;
@@ -27,27 +26,25 @@ public class AuthService : IAuthService
 
     public AuthService(
         ILogger<IAuthService> logger,
-        IUserRepository userRepository,
         IUserService userService,
         IBCryptWrapper bcryptWrapper,
         TokenValidationParameters tokenValidationParameters,
         IAuthRepository authRepository)
     {
         _logger = logger;
-        _userRepository = userRepository;
         _userService = userService;
         _bcryptWrapper = bcryptWrapper;
         _tokenValidationParameters = tokenValidationParameters;
         _authRepository = authRepository;
     }
 
-    public async Task<AuthResponseModel> Login(AuthLoginRequestModel model)
+    public async Task<AuthResultModel> Login(AuthLoginRequestModel model)
     {
         _logger.Log(LogLevel.Debug, "AuthService::Login");
 
         var invalidCredentialsString = "Invalid login credentials supplied.";
 
-        var user = await _userRepository.GetByEmail(model.Email!);
+        var user = await _userService.GetByEmail(model.Email!);
 
         if (user == null)
         {
@@ -65,24 +62,24 @@ public class AuthService : IAuthService
         return authResult;
     }
 
-    public async Task<AuthResponseModel> Register(UserCreateRequestModel model)
+    public async Task<AuthResultModel> Register(UserCreateRequestModel model)
     {
         _logger.Log(LogLevel.Debug, "AuthService::Register");
 
         await _userService.Create(model);
 
-        var user = await _userRepository.GetByEmail(model.Email);
+        var user = await _userService.GetByEmail(model.Email!);
 
         var authResult = await GenerateAuthResultForUser(user);
 
         return authResult;
     }
 
-    public async Task<AuthResponseModel> Refresh(AuthRefreshRequestModel model)
+    public async Task<AuthResultModel> Refresh(string accessToken, string refreshToken)
     {
         _logger.Log(LogLevel.Debug, "AuthService::Refresh");
 
-        var tokenClaimsPrinciple = GetClaimsPrincipalFromToken(model.Token);
+        var tokenClaimsPrinciple = GetClaimsPrincipalFromToken(accessToken);
         if (tokenClaimsPrinciple == null)
         {
             throw new AppException("Invalid token");
@@ -96,12 +93,10 @@ public class AuthService : IAuthService
             throw new AppException("Token has not expired"); // TODO: Change so user does not have too much info
         }
 
-        var jti = tokenClaimsPrinciple.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
-
-        var storedRefreshToken = await _authRepository.GetRefreshTokenByJwtId(jti);
+        var storedRefreshToken = await _authRepository.GetRefreshTokenByToken(refreshToken);
         if (storedRefreshToken == null)
         {
-            throw new AppException("Token does not exist"); // TODO: Change so user does not have too much info
+            throw new AppException("Refresh token does not exist"); // TODO: Change so user does not have too much info
         }
 
         if (DateTime.UtcNow > storedRefreshToken.ExpirationDate)
@@ -119,13 +114,14 @@ public class AuthService : IAuthService
             throw new AppException("Refresh token has been used"); // TODO: Change so user does not have too much info
         }
 
+        var jti = tokenClaimsPrinciple.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
         if (storedRefreshToken.JwtId != jti)
         {
             throw new AppException("Refresh token does not match JWT"); // TODO: Change so user does not have too much info
         }
 
         var userId = Convert.ToInt32(tokenClaimsPrinciple.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
-        var user = await _userService.GetById(userId); // TODO: Should this use Repository vs Service?
+        var user = await _userService.GetById(userId);
 
         // Delete old refresh token as it is about to be rotated to a newly generated one
         await _authRepository.DeleteRefreshTokenByJwtId(storedRefreshToken.JwtId);
@@ -164,7 +160,7 @@ public class AuthService : IAuthService
         return false;
     }
 
-    private async Task<AuthResponseModel> GenerateAuthResultForUser(User user)
+    private async Task<AuthResultModel> GenerateAuthResultForUser(User user)
     {
         _logger.Log(LogLevel.Debug, "AuthService::GenerateToken");
 
@@ -204,10 +200,6 @@ public class AuthService : IAuthService
         // Add refresh token to the DB
         await _authRepository.CreateRefreshToken(refreshToken);
 
-        return new AuthResponseModel
-        {
-            Token = tokenHandler.WriteToken(token),
-            RefreshToken = refreshToken.Token
-        };
+        return new AuthResultModel(tokenHandler.WriteToken(token), refreshToken.Token);
     }
 }

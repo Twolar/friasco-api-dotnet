@@ -71,6 +71,8 @@ public class DataContext : IDataContext
                     );
                 ";
 
+                // TODO: After migration to another database, look at changing the token to be the primary key/id
+
                 await connection.ExecuteAsync(sql);
             }
         }

@@ -14,7 +14,6 @@ namespace friasco_api_unit_tests.Services;
 public class AuthServiceTests
 {
     private Mock<ILogger<IAuthService>> _logger;
-    private Mock<IUserRepository> _userRepositoryMock;
     private Mock<IUserService> _userServiceMock;
     private Mock<IBCryptWrapper> _bcryptWrapperMock;
     private Mock<TokenValidationParameters> _tokenValidationParameters;
@@ -25,14 +24,12 @@ public class AuthServiceTests
     public void SetUp()
     {
         _logger = new Mock<ILogger<IAuthService>>();
-        _userRepositoryMock = new Mock<IUserRepository>();
         _userServiceMock = new Mock<IUserService>();
         _bcryptWrapperMock = new Mock<IBCryptWrapper>();
         _tokenValidationParameters = new Mock<TokenValidationParameters>();
         _authRepository = new Mock<IAuthRepository>();
         _authService = new AuthService(
             _logger.Object,
-            _userRepositoryMock.Object,
             _userServiceMock.Object,
             _bcryptWrapperMock.Object,
             _tokenValidationParameters.Object,
@@ -65,7 +62,7 @@ public class AuthServiceTests
             Password = "password123"
         };
 
-        _userRepositoryMock.Setup(x => x.GetByEmail(userAuthLoginRequestModel.Email)).ReturnsAsync(expectedUser);
+        _userServiceMock.Setup(x => x.GetByEmail(userAuthLoginRequestModel.Email)).ReturnsAsync(expectedUser);
         _bcryptWrapperMock.Setup(x => x.Verify(userAuthLoginRequestModel.Password, expectedUser.PasswordHash)).Returns(true);
 
         var authResult = await _authService.Login(userAuthLoginRequestModel);
@@ -73,7 +70,7 @@ public class AuthServiceTests
         Assert.That(authResult.Token, Is.Not.EqualTo(null));
         Assert.That(authResult.Token.Length, Is.AtLeast(10));
 
-        _userRepositoryMock.Verify(x => x.GetByEmail(userAuthLoginRequestModel.Email), Times.Once());
+        _userServiceMock.Verify(x => x.GetByEmail(userAuthLoginRequestModel.Email), Times.Once());
         _bcryptWrapperMock.Verify(x => x.Verify(userAuthLoginRequestModel.Password, expectedUser.PasswordHash), Times.Once);
     }
 
@@ -97,12 +94,12 @@ public class AuthServiceTests
             Password = "password123"
         };
 
-        _userRepositoryMock.Setup(x => x.GetByEmail(userAuthLoginRequestModel.Email)).ReturnsAsync((User)null);
+        _userServiceMock.Setup(x => x.GetByEmail(userAuthLoginRequestModel.Email)).ReturnsAsync((User)null);
 
         var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Login(userAuthLoginRequestModel));
         Assert.That(exception.Message, Is.EqualTo($"Invalid login credentials supplied."));
 
-        _userRepositoryMock.Verify(x => x.GetByEmail(userAuthLoginRequestModel.Email), Times.Once());
+        _userServiceMock.Verify(x => x.GetByEmail(userAuthLoginRequestModel.Email), Times.Once());
     }
 
     [Test]
@@ -125,13 +122,13 @@ public class AuthServiceTests
             Password = "password123"
         };
 
-        _userRepositoryMock.Setup(x => x.GetByEmail(userAuthLoginRequestModel.Email)).ReturnsAsync(expectedUser);
+        _userServiceMock.Setup(x => x.GetByEmail(userAuthLoginRequestModel.Email)).ReturnsAsync(expectedUser);
         _bcryptWrapperMock.Setup(x => x.Verify(userAuthLoginRequestModel.Password, expectedUser.PasswordHash)).Returns(false);
 
         var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Login(userAuthLoginRequestModel));
         Assert.That(exception.Message, Is.EqualTo($"Invalid login credentials supplied."));
 
-        _userRepositoryMock.Verify(x => x.GetByEmail(userAuthLoginRequestModel.Email), Times.Once());
+        _userServiceMock.Verify(x => x.GetByEmail(userAuthLoginRequestModel.Email), Times.Once());
         _bcryptWrapperMock.Verify(x => x.Verify(userAuthLoginRequestModel.Password, expectedUser.PasswordHash), Times.Once);
     }
 
@@ -165,7 +162,7 @@ public class AuthServiceTests
         };
 
         _userServiceMock.Setup(x => x.Create(userCreateRequestModel)).ReturnsAsync(1);
-        _userRepositoryMock.Setup(x => x.GetByEmail(createdUserAuthLoginRequestModel.Email)).ReturnsAsync(expectedUser);
+        _userServiceMock.Setup(x => x.GetByEmail(createdUserAuthLoginRequestModel.Email)).ReturnsAsync(expectedUser);
 
         var authResult = await _authService.Register(userCreateRequestModel);
 
@@ -173,7 +170,7 @@ public class AuthServiceTests
         Assert.That(authResult.Token.Length, Is.AtLeast(10));
 
         _userServiceMock.Verify(x => x.Create(userCreateRequestModel), Times.Once);
-        _userRepositoryMock.Verify(x => x.GetByEmail(userCreateRequestModel.Email), Times.Once());
+        _userServiceMock.Verify(x => x.GetByEmail(userCreateRequestModel.Email), Times.Once());
     }
 
     // TODO: Add refresh token tests

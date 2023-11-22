@@ -150,7 +150,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseCors(x => x
-    .WithOrigins("http://localhost:8001", "localhost:8001")
+    .WithOrigins("http://localhost:8001", "localhost:8001", "localhost:61355")
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials());
