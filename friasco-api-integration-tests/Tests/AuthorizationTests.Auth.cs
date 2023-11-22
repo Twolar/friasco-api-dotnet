@@ -102,6 +102,4 @@ public partial class AuthorizationTests : IntegrationTestBase
             }
         }
     }
-
-    // TODO: Add method to clean up Refresh Tokens?
 }
