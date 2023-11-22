@@ -50,6 +50,8 @@ public class AuthControllerTests
 
         var result = await _controller.Login(model);
         Assert.IsInstanceOf<OkObjectResult>(result);
+
+        _authServiceMock.Verify(x => x.Login(It.IsAny<AuthLoginRequestModel>()), Times.Once);
     }
 
     [Test]
@@ -62,6 +64,8 @@ public class AuthControllerTests
 
         var result = await _controller.Register(model);
         Assert.IsInstanceOf<OkObjectResult>(result);
+
+        _authServiceMock.Verify(x => x.Register(It.IsAny<UserCreateRequestModel>()), Times.Once);
     }
 
     [Test]
@@ -82,7 +86,9 @@ public class AuthControllerTests
 
         var result = await _controller.Refresh(model);
         Assert.IsInstanceOf<OkObjectResult>(result);
-    }
 
-    // TODO: Add mock method call verifies
+        _authServiceMock.Verify(x => x.Refresh(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        _responseCookieCollectionMock.Verify(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken), Times.Once);
+        _responseCookiesMock.Verify(x => x.Append(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CookieOptions>()), Times.Once);
+    }
 }
