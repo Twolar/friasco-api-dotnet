@@ -62,7 +62,7 @@ public class AuthController : ControllerBase
 
         if (!HttpContext.Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
         {
-            throw new AppException("No refresh token in auth cookie"); // TODO: Change so user does not have too much info
+            throw new AppException("No refresh token in auth cookie"); // TODO: Testing, Change so user does not have too much info
         }
 
         var authResult = await _authService.Refresh(model.Token!, refreshToken);
@@ -83,7 +83,7 @@ public class AuthController : ControllerBase
         HttpContext.Response.Cookies.Append("X-Refresh-Token", authResult.RefreshToken, new CookieOptions()
         {
             HttpOnly = true,
-            //SameSite = SameSiteMode.Strict // TODO: Activate before deploying
+            //SameSite = SameSiteMode.Strict // TODO: Production, Activate before deploying
         });
     }
 }
