@@ -87,12 +87,15 @@ public class IntegrationTestBase
     }
 
     [OneTimeTearDown]
-    public void OneTimeTearDown()
+    public async Task OneTimeTearDown()
     {
         ApiClientWithNoAuth.Dispose();
         ApiClientWithRoleUser.Dispose();
         ApiClientWithRoleAdmin.Dispose();
         ApiClientWithRoleSuperAdmin.Dispose();
+
+        await DeleteAllRefreshTokens(); 
+
         Factory.Dispose();
     }
 
@@ -232,7 +235,28 @@ public class IntegrationTestBase
         }
     }
 
-    #endregion
+    public async Task DeleteAllRefreshTokens()
+    {
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var dapperWrapper = scope.ServiceProvider.GetRequiredService<IDapperWrapper>();
+            var dataContext = scope.ServiceProvider.GetRequiredService<IDataContext>();
 
-    // TODO: Add method to clean up Refresh Tokens?
+            using (var connection = dataContext.CreateConnection())
+            {
+                try
+                {
+                    var sql = @"
+                        DELETE FROM RefreshTokens
+                    ";
+                    await dapperWrapper.ExecuteAsync(connection, sql);
+                }
+                finally
+                {
+                }
+            }
+        }
+    }
+
+    #endregion
 }
