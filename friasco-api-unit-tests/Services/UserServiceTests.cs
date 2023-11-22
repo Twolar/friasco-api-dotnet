@@ -50,7 +50,7 @@ public class UserServiceTests
     }
 
     [Test]
-    public async Task GetById_ReturnsUserById()
+    public async Task GetById_ReturnsUser()
     {
         var userId = 1;
         var expectedUser = new User { Id = userId, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
@@ -72,6 +72,31 @@ public class UserServiceTests
         Assert.That(exception.Message, Is.EqualTo($"User with id [{expectedUser.Id}] not found"));
 
         _userRepositoryMock.Verify(x => x.GetById(It.IsAny<int>()), Times.Once());
+    }
+
+    [Test]
+    public async Task GetByEmail_ReturnsUser()
+    {
+        var userEmail = "user1@example.com";
+        var expectedUser = new User { Id = 1, Username = "User1", Email = userEmail, FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
+        _userRepositoryMock.Setup(x => x.GetByEmail(userEmail)).ReturnsAsync(expectedUser);
+
+        var user = await _userService.GetByEmail(userEmail);
+
+        Assert.That(user, Is.EqualTo(expectedUser));
+        _userRepositoryMock.Verify(x => x.GetByEmail(userEmail), Times.Once());
+    }
+
+    [Test]
+    public async Task GetByEmail_ThrowsExceptionIfUserDoesNotExistAlready()
+    {
+        var expectedUser = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
+        _userRepositoryMock.Setup(x => x.GetByEmail(expectedUser.Email)).ReturnsAsync((User)null);
+
+        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.GetByEmail(expectedUser.Email));
+        Assert.That(exception.Message, Is.EqualTo($"User with email [{expectedUser.Email}] not found"));
+
+        _userRepositoryMock.Verify(x => x.GetByEmail(It.IsAny<string>()), Times.Once());
     }
 
     [Test]

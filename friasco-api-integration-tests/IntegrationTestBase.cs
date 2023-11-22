@@ -132,7 +132,7 @@ public class IntegrationTestBase
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
         var contentJsonString = await response.Content.ReadAsStringAsync();
-        var loginResponse = JsonSerializer.Deserialize<AuthResponseModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
+        var loginResponse = JsonSerializer.Deserialize<AuthResultModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
         Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
         Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
 

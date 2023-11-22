@@ -5,8 +5,8 @@ namespace friasco_api.Data.Repositories;
 
 public interface IAuthRepository
 {
+    Task<RefreshToken> GetRefreshTokenByToken(string token);
     Task<int> CreateRefreshToken(RefreshToken refreshToken);
-    Task<RefreshToken> GetRefreshTokenByJwtId(string id);
     Task<int> UpdateRefreshToken(RefreshToken refreshToken);
     Task<int> DeleteRefreshTokenByJwtId(string jwtId);
 }
@@ -23,16 +23,16 @@ public class AuthRepository : IAuthRepository
         _dapperWrapper = dapperWrapper;
     }
 
-    public async Task<RefreshToken> GetRefreshTokenByJwtId(string jwtId)
+    public async Task<RefreshToken> GetRefreshTokenByToken(string token)
     {
-        _logger.LogDebug($"AuthRepository::GetRefreshTokenByJwtId jwtId: {jwtId}");
+        _logger.LogDebug($"AuthRepository::GetRefreshTokenByToken token: {token}");
         using (var connection = _dataContext.CreateConnection())
         {
             var sql = @"
                 SELECT * FROM RefreshTokens
-                WHERE JwtId = @jwtId
+                WHERE Token = @token
             ";
-            return await _dapperWrapper.QueryFirstOrDefaultAsync<RefreshToken>(connection, sql, new { jwtId });
+            return await _dapperWrapper.QueryFirstOrDefaultAsync<RefreshToken>(connection, sql, new { token });
         }
     }
 
