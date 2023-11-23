@@ -209,7 +209,7 @@ public class AuthServiceTests
         };
 
         var accessTokenId = Guid.NewGuid().ToString();
-        var accessToken = await CreateJwtToken(user, accessTokenId, 500);
+        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
 
         var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
         var storedRefreshToken = new RefreshToken
@@ -236,17 +236,264 @@ public class AuthServiceTests
         _userServiceMock.Verify(u => u.GetById(It.IsAny<int>()), Times.Once);
     }
 
-    // TODO: Invalid token
-    // TODO: Token has not expired
-    // TODO: Refresh token does not exist
-    // TODO: Refresh token has expired
-    // TODO: Refresh token is not valid
-    // TODO: Refresh token has been used
-    // TODO: Refresh token does not match JWT
-    // TODO: Can't find used by ID
-    // TODO: Failed to delete refresh token
+    [Test]
+    public async Task Refresh_ThrowsException_WhenJwtNotExpired()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
 
-    #region 
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 45000);
+
+        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = accessTokenId,
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
+            IsUsed = false,
+            IsValid = true
+        };
+
+        var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
+        Assert.That(exception.Message, Is.EqualTo($"Token has not expired"));
+    }
+
+    [Test]
+    public async Task Refresh_ThrowsException_WhenRefreshTokenNotFound()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
+
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+
+        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = accessTokenId,
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
+            IsUsed = false,
+            IsValid = true
+        };
+
+        _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync((RefreshToken)null);
+
+        var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
+        Assert.That(exception.Message, Is.EqualTo($"Refresh token does not exist"));
+
+        _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Refresh_ThrowsException_WhenRefreshTokenExpired()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
+
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+
+        var refreshTokenExpiryInMilliseconds = 100;
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = accessTokenId,
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddMilliseconds(-refreshTokenExpiryInMilliseconds),
+            IsUsed = false,
+            IsValid = true
+        };
+
+        _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
+
+        var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
+        Assert.That(exception.Message, Is.EqualTo($"Refresh token has expired"));
+
+        _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Refresh_ThrowsException_WhenRefreshTokenNotValid()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
+
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+
+        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = accessTokenId,
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
+            IsUsed = false,
+            IsValid = false
+        };
+
+        _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
+
+        var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
+        Assert.That(exception.Message, Is.EqualTo($"Refresh token is not valid"));
+
+        _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Refresh_ThrowsException_WhenRefreshTokenIsUsed()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
+
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+
+        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = accessTokenId,
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
+            IsUsed = true,
+            IsValid = true
+        };
+
+        _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
+
+        var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
+        Assert.That(exception.Message, Is.EqualTo($"Refresh token has been used"));
+
+        _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Refresh_ThrowsException_WhenRefreshTokenJwtIdDoesNotMatchAccessToken()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
+
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
+
+        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = Guid.NewGuid().ToString(),
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
+            IsUsed = false,
+            IsValid = true
+        };
+
+        _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
+
+        var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
+        Assert.That(exception.Message, Is.EqualTo($"Refresh token does not match JWT"));
+
+        _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Refresh_ThrowsException_WhenUserNotFound()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
+
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
+
+        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = accessTokenId,
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
+            IsUsed = false,
+            IsValid = true
+        };
+
+        _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
+        _userServiceMock.Setup(u => u.GetById(It.IsAny<int>())).ThrowsAsync(new KeyNotFoundException($"User with id [{user.Id}] not found"));
+
+        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
+        Assert.That(exception.Message, Is.EqualTo($"User with id [{user.Id}] not found"));
+
+        _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
+        _userServiceMock.Verify(u => u.GetById(It.IsAny<int>()), Times.Once);
+    }
+
+    #region Helpers
 
     private async Task<string> CreateJwtToken(User user, string jwtId, int tokenExpiryInMilliseconds)
     {
