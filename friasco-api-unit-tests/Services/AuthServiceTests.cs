@@ -209,7 +209,7 @@ public class AuthServiceTests
         };
 
         var accessTokenId = Guid.NewGuid().ToString();
-        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
 
         var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
         var storedRefreshToken = new RefreshToken
@@ -284,7 +284,7 @@ public class AuthServiceTests
         };
 
         var accessTokenId = Guid.NewGuid().ToString();
-        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
 
         var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
         var storedRefreshToken = new RefreshToken
@@ -321,7 +321,7 @@ public class AuthServiceTests
         };
 
         var accessTokenId = Guid.NewGuid().ToString();
-        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
 
         var refreshTokenExpiryInMilliseconds = 100;
         var storedRefreshToken = new RefreshToken
@@ -358,7 +358,7 @@ public class AuthServiceTests
         };
 
         var accessTokenId = Guid.NewGuid().ToString();
-        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
 
         var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
         var storedRefreshToken = new RefreshToken
@@ -395,7 +395,7 @@ public class AuthServiceTests
         };
 
         var accessTokenId = Guid.NewGuid().ToString();
-        var accessToken = await CreateJwtToken(user, accessTokenId, 250);
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
 
         var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
         var storedRefreshToken = new RefreshToken
