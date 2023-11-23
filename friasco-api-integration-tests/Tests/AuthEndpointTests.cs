@@ -172,6 +172,4 @@ public class AuthEndpointTests : IntegrationTestBase
             }
         }
     }
-
-    // TODO: Write tests for Refresh token functionality...
 }
