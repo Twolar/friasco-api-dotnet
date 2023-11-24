@@ -1,8 +1,11 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using friasco_api;
 using friasco_api.Data.Entities;
 using friasco_api.Enums;
+using friasco_api.Models;
 using friasco_api_integration_tests.Helpers;
 
 namespace friasco_api_integration_tests.Tests;
@@ -170,6 +173,59 @@ public class AuthEndpointTests : IntegrationTestBase
             {
                 await DbUserDeleteById(userInDb.Id);
             }
+        }
+    }
+
+    [Test]
+    public async Task Auth_Refresh_Succeeds_WithNewTokens()
+    {
+        var originalJwtExpiry = Environment.GetEnvironmentVariable("JWT_EXPIRY_SECONDS");
+        Environment.SetEnvironmentVariable("JWT_EXPIRY_SECONDS", "1");
+
+        try
+        {
+            var client = Factory.CreateClient();
+
+            var apiUserLoginObject = new
+            {
+                Email = "SuperAdminRole@example.com",
+                Password = "Password123",
+            };
+            var jsonContent = new StringContent(JsonSerializer.Serialize(apiUserLoginObject), Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync("/Auth/Login", jsonContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            var contentJsonString = await response.Content.ReadAsStringAsync();
+            var loginResponse = JsonSerializer.Deserialize<AuthResultModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
+            Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
+            Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
+
+            // Sleep for 1 seconds so that jwt expires
+            await Task.Delay(1000);
+
+            var apiRefreshObject = new
+            {
+                token = loginResponse.Token
+            };
+            jsonContent = new StringContent(JsonSerializer.Serialize(apiRefreshObject), Encoding.UTF8, "application/json");
+
+            response = await client.PostAsync("/Auth/Refresh", jsonContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+            contentJsonString = await response.Content.ReadAsStringAsync();
+            var refreshResponse = JsonSerializer.Deserialize<AuthResultModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
+            Assert.That(refreshResponse.Token, Is.Not.EqualTo(string.Empty));
+            Assert.That(refreshResponse.Token, Is.Not.EqualTo(null));
+
+            // Assert new JWT is created via using HttpOnly Cookie RefreshToken
+            Assert.That(refreshResponse.Token, Is.Not.EqualTo(loginResponse.Token));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("JWT_EXPIRY_SECONDS", originalJwtExpiry);
         }
     }
 }

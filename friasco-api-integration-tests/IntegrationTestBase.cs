@@ -4,12 +4,11 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using friasco_api;
 using friasco_api.Data;
 using friasco_api.Data.Entities;
 using friasco_api.Data.Repositories;
 using friasco_api.Helpers;
-using friasco_api_integration_tests.Helpers;
+using friasco_api.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,7 +93,7 @@ public class IntegrationTestBase
         ApiClientWithRoleAdmin.Dispose();
         ApiClientWithRoleSuperAdmin.Dispose();
 
-        await DeleteAllRefreshTokens(); 
+        await DeleteAllRefreshTokens();
 
         Factory.Dispose();
     }
