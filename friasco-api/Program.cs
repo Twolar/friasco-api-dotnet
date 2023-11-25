@@ -59,6 +59,7 @@ var tokenValidationParameters = new TokenValidationParameters
     ValidateIssuer = true,
     ValidateAudience = true,
     ValidateLifetime = true,
+    ClockSkew = TimeSpan.Zero,
     ValidateIssuerSigningKey = true,
     ValidIssuer = jwtSettings.Issuer,
     ValidAudience = jwtSettings.Audience,
@@ -146,14 +147,14 @@ await UserInitializer.CreateTestUsers(app);
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
 app.UseCors(x => x
     .WithOrigins("http://localhost:8001", "localhost:8001", "localhost:61355")
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials());
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
 

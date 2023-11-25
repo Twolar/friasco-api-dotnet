@@ -83,6 +83,9 @@ public class AuthController : ControllerBase
         HttpContext.Response.Cookies.Append("X-Refresh-Token", authResult.RefreshToken, new CookieOptions()
         {
             HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            Secure = true // This is required when SameSite is None
+
             //SameSite = SameSiteMode.Strict // TODO: Production, Activate before deploying
         });
     }

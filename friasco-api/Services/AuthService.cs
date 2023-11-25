@@ -135,7 +135,9 @@ public class AuthService : IAuthService
 
         try
         {
-            var principle = tokenHandler.ValidateToken(token, _tokenValidationParameters, out var validatedToken);
+            var tokenRefreshValidationParameters = _tokenValidationParameters.Clone();
+            tokenRefreshValidationParameters.ValidateLifetime = false;
+            var principle = tokenHandler.ValidateToken(token, tokenRefreshValidationParameters, out var validatedToken);
             if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
             {
                 return null;
