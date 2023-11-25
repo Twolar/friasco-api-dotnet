@@ -197,6 +197,15 @@ public class AuthEndpointTests : IntegrationTestBase
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
+            Assert.That(response.Headers.Contains("Set-Cookie"));
+            Assert.That(response.Headers.GetValues("Set-Cookie").Any(h => h.Contains("X-Refresh-Token")));
+
+            var refreshToken = response.Headers.GetValues("Set-Cookie")
+                .First(h => h.StartsWith("X-Refresh-Token"))
+                .Split(';')[0]
+                .Split('=')[1];
+            client.DefaultRequestHeaders.Add("Cookie", $"X-Refresh-Token={refreshToken}");
+
             var contentJsonString = await response.Content.ReadAsStringAsync();
             var loginResponse = JsonSerializer.Deserialize<AuthResultModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
             Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
