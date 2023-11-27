@@ -103,7 +103,7 @@ public class AuthControllerTests
         _httpRequestMock.Setup(x => x.Cookies).Returns(_responseCookieCollectionMock.Object);
         _responseCookieCollectionMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken)).Returns(true);
 
-        var result = await _controller.Logout(model);
+        var result = await _controller.Logout();
         Assert.IsInstanceOf<OkResult>(result);
 
         _authServiceMock.Verify(x => x.Logout(It.IsAny<string>()), Times.Once);
@@ -122,7 +122,7 @@ public class AuthControllerTests
         _httpRequestMock.Setup(x => x.Cookies).Returns(_responseCookieCollectionMock.Object);
         _responseCookieCollectionMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken)).Returns(true);
 
-        var result = await _controller.LogoutAll(model);
+        var result = await _controller.LogoutAll();
         Assert.IsInstanceOf<OkResult>(result);
 
         _authServiceMock.Verify(x => x.LogoutAll(It.IsAny<string>()), Times.Once);

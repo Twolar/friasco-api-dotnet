@@ -150,12 +150,6 @@ public partial class AuthorizationTests : IntegrationTestBase
     [TestCaseSource(nameof(ApiClientNames))]
     public async Task Auth_Logout_Auth(string apiClientName)
     {
-        var tokenRefreshRequest = new
-        {
-            Token = Guid.NewGuid().ToString()
-        };
-        var jsonContent = new StringContent(JsonSerializer.Serialize(tokenRefreshRequest), Encoding.UTF8, "application/json");
-
         var url = "Auth/Logout";
 
         HttpResponseMessage? response;
@@ -165,19 +159,19 @@ public partial class AuthorizationTests : IntegrationTestBase
             switch (apiClientName)
             {
                 case nameof(ApiClientWithNoAuth):
-                    response = await ApiClientWithNoAuth.PostAsync(url, jsonContent);
+                    response = await ApiClientWithNoAuth.GetAsync(url);
                     Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
                     break;
                 case nameof(ApiClientWithRoleUser):
-                    response = await ApiClientWithRoleUser.PostAsync(url, jsonContent);
+                    response = await ApiClientWithRoleUser.GetAsync(url);
                     Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                     break;
                 case nameof(ApiClientWithRoleAdmin):
-                    response = await ApiClientWithRoleAdmin.PostAsync(url, jsonContent);
+                    response = await ApiClientWithRoleAdmin.GetAsync(url);
                     Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                     break;
                 case nameof(ApiClientWithRoleSuperAdmin):
-                    response = await ApiClientWithRoleSuperAdmin.PostAsync(url, jsonContent);
+                    response = await ApiClientWithRoleSuperAdmin.GetAsync(url);
                     Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                     break;
                 default:
@@ -193,12 +187,6 @@ public partial class AuthorizationTests : IntegrationTestBase
     [TestCaseSource(nameof(ApiClientNames))]
     public async Task Auth_LogoutAll_Auth(string apiClientName)
     {
-        var tokenRefreshRequest = new
-        {
-            Token = Guid.NewGuid().ToString()
-        };
-        var jsonContent = new StringContent(JsonSerializer.Serialize(tokenRefreshRequest), Encoding.UTF8, "application/json");
-
         var url = "Auth/LogoutAll";
 
         HttpResponseMessage? response;
@@ -208,19 +196,19 @@ public partial class AuthorizationTests : IntegrationTestBase
             switch (apiClientName)
             {
                 case nameof(ApiClientWithNoAuth):
-                    response = await ApiClientWithNoAuth.PostAsync(url, jsonContent);
+                    response = await ApiClientWithNoAuth.GetAsync(url);
                     Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
                     break;
                 case nameof(ApiClientWithRoleUser):
-                    response = await ApiClientWithRoleUser.PostAsync(url, jsonContent);
+                    response = await ApiClientWithRoleUser.GetAsync(url);
                     Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                     break;
                 case nameof(ApiClientWithRoleAdmin):
-                    response = await ApiClientWithRoleAdmin.PostAsync(url, jsonContent);
+                    response = await ApiClientWithRoleAdmin.GetAsync(url);
                     Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                     break;
                 case nameof(ApiClientWithRoleSuperAdmin):
-                    response = await ApiClientWithRoleSuperAdmin.PostAsync(url, jsonContent);
+                    response = await ApiClientWithRoleSuperAdmin.GetAsync(url);
                     Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                     break;
                 default:

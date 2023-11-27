@@ -522,11 +522,13 @@ public class AuthServiceTests
             IsValid = true
         };
 
+        _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
         _authRepository.Setup(a => a.DeleteRefreshTokenByJwtId(It.IsAny<string>())).ReturnsAsync(1);
 
         await _authService.Logout(accessToken);
 
         _authRepository.Verify(a => a.DeleteRefreshTokenByJwtId(It.IsAny<string>()), Times.Once);
+        _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
     }
 
     [Test]
@@ -558,13 +560,13 @@ public class AuthServiceTests
             IsValid = true
         };
 
+        _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
         _authRepository.Setup(a => a.DeleteRefreshTokensByUserGuid(It.IsAny<Guid>())).ReturnsAsync(1);
-        _userServiceMock.Setup(u => u.GetById(It.IsAny<int>())).ReturnsAsync(user);
 
         await _authService.LogoutAll(accessToken);
 
         _authRepository.Verify(a => a.DeleteRefreshTokensByUserGuid(It.IsAny<Guid>()), Times.Once);
-        _userServiceMock.Verify(u => u.GetById(It.IsAny<int>()), Times.Once);
+        _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
     }
 
     #region Helpers

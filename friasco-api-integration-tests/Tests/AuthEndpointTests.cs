@@ -268,15 +268,9 @@ public class AuthEndpointTests : IntegrationTestBase
         Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
         Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
 
-        var apiLogoutObject = new
-        {
-            token = loginResponse.Token
-        };
-        jsonContent = new StringContent(JsonSerializer.Serialize(apiLogoutObject), Encoding.UTF8, "application/json");
-
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
 
-        response = await client.PostAsync("/Auth/Logout", jsonContent);
+        response = await client.GetAsync("/Auth/Logout");
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
     }
@@ -311,15 +305,9 @@ public class AuthEndpointTests : IntegrationTestBase
         Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
         Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
 
-        var apiLogoutObject = new
-        {
-            token = loginResponse.Token
-        };
-        jsonContent = new StringContent(JsonSerializer.Serialize(apiLogoutObject), Encoding.UTF8, "application/json");
-
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
 
-        response = await client.PostAsync("/Auth/LogoutAll", jsonContent);
+        response = await client.GetAsync("/Auth/LogoutAll");
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
     }
