@@ -1,5 +1,4 @@
-﻿using friasco_api;
-using friasco_api.Controllers;
+﻿using friasco_api.Controllers;
 using friasco_api.Models;
 using friasco_api.Services;
 using Microsoft.AspNetCore.Http;
@@ -90,5 +89,43 @@ public class AuthControllerTests
         _authServiceMock.Verify(x => x.Refresh(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         _responseCookieCollectionMock.Verify(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken), Times.Once);
         _responseCookiesMock.Verify(x => x.Append(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CookieOptions>()), Times.Once);
+    }
+
+    [Test]
+    public async Task Logout_ReturnsOkResult()
+    {
+        var oldRefreshToken = "OldRefreshToken";
+
+        var model = new AuthTokenRequestModel();
+        _authServiceMock.Setup(x => x.Logout(It.IsAny<string>()));
+        _httpContextMock.Setup(x => x.Request).Returns(_httpRequestMock.Object);
+
+        _httpRequestMock.Setup(x => x.Cookies).Returns(_responseCookieCollectionMock.Object);
+        _responseCookieCollectionMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken)).Returns(true);
+
+        var result = await _controller.Logout(model);
+        Assert.IsInstanceOf<OkResult>(result);
+
+        _authServiceMock.Verify(x => x.Logout(It.IsAny<string>()), Times.Once);
+        _responseCookieCollectionMock.Verify(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken), Times.Once);
+    }
+
+    [Test]
+    public async Task LogoutAll_ReturnsOkResult()
+    {
+        var oldRefreshToken = "OldRefreshToken";
+
+        var model = new AuthTokenRequestModel();
+        _authServiceMock.Setup(x => x.LogoutAll(It.IsAny<string>()));
+        _httpContextMock.Setup(x => x.Request).Returns(_httpRequestMock.Object);
+
+        _httpRequestMock.Setup(x => x.Cookies).Returns(_responseCookieCollectionMock.Object);
+        _responseCookieCollectionMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken)).Returns(true);
+
+        var result = await _controller.LogoutAll(model);
+        Assert.IsInstanceOf<OkResult>(result);
+
+        _authServiceMock.Verify(x => x.LogoutAll(It.IsAny<string>()), Times.Once);
+        _responseCookieCollectionMock.Verify(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken), Times.Once);
     }
 }

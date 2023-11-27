@@ -493,6 +493,80 @@ public class AuthServiceTests
         _userServiceMock.Verify(u => u.GetById(It.IsAny<int>()), Times.Once);
     }
 
+    [Test]
+    public async Task Logout()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
+
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
+
+        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = accessTokenId,
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
+            IsUsed = false,
+            IsValid = true
+        };
+
+        _authRepository.Setup(a => a.DeleteRefreshTokensByJwtId(It.IsAny<string>())).ReturnsAsync(1);
+
+        await _authService.Logout(accessToken);
+
+        _authRepository.Verify(a => a.DeleteRefreshTokensByJwtId(It.IsAny<string>()), Times.Once);
+    }
+
+    [Test]
+    public async Task LogoutAll()
+    {
+        var user = new User
+        {
+            Id = 1,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            Guid = Guid.NewGuid()
+        };
+
+        var accessTokenId = Guid.NewGuid().ToString();
+        var accessToken = await CreateJwtToken(user, accessTokenId, 100);
+
+        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
+        var storedRefreshToken = new RefreshToken
+        {
+            Token = Guid.NewGuid().ToString(),
+            JwtId = accessTokenId,
+            UserGuid = user.Guid,
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
+            IsUsed = false,
+            IsValid = true
+        };
+
+        _authRepository.Setup(a => a.DeleteRefreshTokensByUserGuid(It.IsAny<Guid>())).ReturnsAsync(1);
+        _userServiceMock.Setup(u => u.GetById(It.IsAny<int>())).ReturnsAsync(user);
+
+        await _authService.LogoutAll(accessToken);
+
+        _authRepository.Verify(a => a.DeleteRefreshTokensByUserGuid(It.IsAny<Guid>()), Times.Once);
+        _userServiceMock.Verify(u => u.GetById(It.IsAny<int>()), Times.Once);
+    }
+
     #region Helpers
 
     private async Task<string> CreateJwtToken(User user, string jwtId, int tokenExpiryInMilliseconds)

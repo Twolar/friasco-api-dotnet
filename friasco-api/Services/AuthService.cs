@@ -14,6 +14,8 @@ public interface IAuthService
     Task<AuthResultModel> Login(AuthLoginRequestModel model);
     Task<AuthResultModel> Register(UserCreateRequestModel model);
     Task<AuthResultModel> Refresh(string accessToken, string refreshToken);
+    Task Logout(string accessToken);
+    Task LogoutAll(string accessToken);
 }
 
 public class AuthService : IAuthService
@@ -124,10 +126,44 @@ public class AuthService : IAuthService
         var user = await _userService.GetById(userId);
 
         // Delete old refresh token as it is about to be rotated to a newly generated one
-        await _authRepository.DeleteRefreshTokenByJwtId(storedRefreshToken.JwtId);
+        await _authRepository.DeleteRefreshTokensByJwtId(storedRefreshToken.JwtId);
 
         return await GenerateAuthResultForUser(user);
     }
+
+    public async Task Logout(string accessToken)
+    {
+        _logger.Log(LogLevel.Debug, "AuthService::Logout");
+
+        var tokenClaimsPrinciple = GetClaimsPrincipalFromToken(accessToken);
+        if (tokenClaimsPrinciple == null)
+        {
+            throw new AppException("Invalid token supplied");
+        }
+
+        string jwtId = tokenClaimsPrinciple.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+
+        await _authRepository.DeleteRefreshTokensByJwtId(jwtId);
+    }
+
+    public async Task LogoutAll(string accessToken)
+    {
+        _logger.Log(LogLevel.Debug, "AuthService::Logout");
+
+        var tokenClaimsPrinciple = GetClaimsPrincipalFromToken(accessToken);
+        if (tokenClaimsPrinciple == null)
+        {
+            throw new AppException("Invalid token supplied");
+        }
+
+        string userIdString = tokenClaimsPrinciple.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+        var userId = Convert.ToInt32(userIdString);
+        var user = await _userService.GetById(userId);
+
+        await _authRepository.DeleteRefreshTokensByUserGuid(user.Guid);
+    }
+
+    #region Helpers
 
     private ClaimsPrincipal? GetClaimsPrincipalFromToken(string token)
     {
@@ -204,4 +240,6 @@ public class AuthService : IAuthService
 
         return new AuthResultModel(tokenHandler.WriteToken(token), refreshToken.Token);
     }
+
+    #endregion
 }

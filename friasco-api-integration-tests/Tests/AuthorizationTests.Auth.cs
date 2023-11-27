@@ -102,4 +102,133 @@ public partial class AuthorizationTests : IntegrationTestBase
             }
         }
     }
+
+    [Test]
+    [TestCaseSource(nameof(ApiClientNames))]
+    public async Task Auth_Refresh_Auth(string apiClientName)
+    {
+        var tokenRefreshRequest = new
+        {
+            Token = Guid.NewGuid().ToString()
+        };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(tokenRefreshRequest), Encoding.UTF8, "application/json");
+
+        var url = "Auth/Register";
+
+        HttpResponseMessage? response;
+
+        try
+        {
+            switch (apiClientName)
+            {
+                case nameof(ApiClientWithNoAuth):
+                    response = await ApiClientWithNoAuth.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                case nameof(ApiClientWithRoleUser):
+                    response = await ApiClientWithRoleUser.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                case nameof(ApiClientWithRoleAdmin):
+                    response = await ApiClientWithRoleAdmin.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                case nameof(ApiClientWithRoleSuperAdmin):
+                    response = await ApiClientWithRoleSuperAdmin.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid api client name: {apiClientName}");
+            }
+        }
+        finally
+        {
+        }
+    }
+
+    [Test]
+    [TestCaseSource(nameof(ApiClientNames))]
+    public async Task Auth_Logout_Auth(string apiClientName)
+    {
+        var tokenRefreshRequest = new
+        {
+            Token = Guid.NewGuid().ToString()
+        };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(tokenRefreshRequest), Encoding.UTF8, "application/json");
+
+        var url = "Auth/Logout";
+
+        HttpResponseMessage? response;
+
+        try
+        {
+            switch (apiClientName)
+            {
+                case nameof(ApiClientWithNoAuth):
+                    response = await ApiClientWithNoAuth.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+                    break;
+                case nameof(ApiClientWithRoleUser):
+                    response = await ApiClientWithRoleUser.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                case nameof(ApiClientWithRoleAdmin):
+                    response = await ApiClientWithRoleAdmin.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                case nameof(ApiClientWithRoleSuperAdmin):
+                    response = await ApiClientWithRoleSuperAdmin.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid api client name: {apiClientName}");
+            }
+        }
+        finally
+        {
+        }
+    }
+
+    [Test]
+    [TestCaseSource(nameof(ApiClientNames))]
+    public async Task Auth_LogoutAll_Auth(string apiClientName)
+    {
+        var tokenRefreshRequest = new
+        {
+            Token = Guid.NewGuid().ToString()
+        };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(tokenRefreshRequest), Encoding.UTF8, "application/json");
+
+        var url = "Auth/LogoutAll";
+
+        HttpResponseMessage? response;
+
+        try
+        {
+            switch (apiClientName)
+            {
+                case nameof(ApiClientWithNoAuth):
+                    response = await ApiClientWithNoAuth.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+                    break;
+                case nameof(ApiClientWithRoleUser):
+                    response = await ApiClientWithRoleUser.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                case nameof(ApiClientWithRoleAdmin):
+                    response = await ApiClientWithRoleAdmin.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                case nameof(ApiClientWithRoleSuperAdmin):
+                    response = await ApiClientWithRoleSuperAdmin.PostAsync(url, jsonContent);
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid api client name: {apiClientName}");
+            }
+        }
+        finally
+        {
+        }
+    }
 }

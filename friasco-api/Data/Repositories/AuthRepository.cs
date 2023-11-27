@@ -8,7 +8,8 @@ public interface IAuthRepository
     Task<RefreshToken> GetRefreshTokenByToken(string token);
     Task<int> CreateRefreshToken(RefreshToken refreshToken);
     Task<int> UpdateRefreshToken(RefreshToken refreshToken);
-    Task<int> DeleteRefreshTokenByJwtId(string jwtId);
+    Task<int> DeleteRefreshTokensByJwtId(string jwtId);
+    Task<int> DeleteRefreshTokensByUserGuid(Guid userGuid);
 }
 
 public class AuthRepository : IAuthRepository
@@ -82,9 +83,9 @@ public class AuthRepository : IAuthRepository
         }
     }
 
-    public async Task<int> DeleteRefreshTokenByJwtId(string jwtId)
+    public async Task<int> DeleteRefreshTokensByJwtId(string jwtId)
     {
-        _logger.LogDebug($"AuthRepository::DeleteRefreshTokenByJwtId jwtId: {jwtId}");
+        _logger.LogDebug($"AuthRepository::DeleteRefreshTokensByJwtId jwtId: {jwtId}");
         using (var connection = _dataContext.CreateConnection())
         {
             var sql = @"
@@ -92,6 +93,19 @@ public class AuthRepository : IAuthRepository
                 WHERE JwtId = @jwtId
             ";
             return await _dapperWrapper.ExecuteAsync(connection, sql, new { jwtId });
+        }
+    }
+
+    public async Task<int> DeleteRefreshTokensByUserGuid(Guid userGuid)
+    {
+        _logger.LogDebug($"AuthRepository::DeleteRefreshTokensByUserGuid userGuid: {userGuid}");
+        using (var connection = _dataContext.CreateConnection())
+        {
+            var sql = @"
+                DELETE FROM RefreshTokens
+                WHERE UserGuid = @userGuid
+            ";
+            return await _dapperWrapper.ExecuteAsync(connection, sql, new { userGuid });
         }
     }
 }

@@ -108,10 +108,31 @@ public class AuthRepositoryTests
             IsUsed = false,
             IsValid = true
         };
-        var objectParams = new { id = tokenToDelete.Id };
         _mockDapperWrapper.Setup(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(1);
 
-        var rowsAffected = await _authRepository.DeleteRefreshTokenByJwtId(tokenToDelete.JwtId);
+        var rowsAffected = await _authRepository.DeleteRefreshTokensByJwtId(tokenToDelete.JwtId);
+
+        Assert.That(rowsAffected, Is.EqualTo(1));
+        _mockDapperWrapper.Verify(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>()), Times.Once());
+    }
+
+    [Test]
+    public async Task DeleteRefreshTokensByUserGuid_ReturnsOneRowAffected()
+    {
+        var tokenToDelete = new RefreshToken
+        {
+            Id = 1,
+            UserGuid = Guid.NewGuid(),
+            JwtId = "RandomGuidId",
+            Token = "TokenItself",
+            CreatedDate = DateTime.UtcNow,
+            ExpirationDate = DateTime.UtcNow.AddDays(1),
+            IsUsed = false,
+            IsValid = true
+        };
+        _mockDapperWrapper.Setup(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(1);
+
+        var rowsAffected = await _authRepository.DeleteRefreshTokensByUserGuid(tokenToDelete.UserGuid.Value);
 
         Assert.That(rowsAffected, Is.EqualTo(1));
         _mockDapperWrapper.Verify(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>()), Times.Once());

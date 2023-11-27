@@ -237,4 +237,90 @@ public class AuthEndpointTests : IntegrationTestBase
             Environment.SetEnvironmentVariable("JWT_EXPIRY_SECONDS", originalJwtExpiry);
         }
     }
+
+    [Test]
+    public async Task Auth_Logout_Suceeds()
+    {
+        var client = Factory.CreateClient();
+
+        var apiUserLoginObject = new
+        {
+            Email = "SuperAdminRole@example.com",
+            Password = "Password123",
+        };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(apiUserLoginObject), Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("/Auth/Login", jsonContent);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+        Assert.That(response.Headers.Contains("Set-Cookie"));
+        Assert.That(response.Headers.GetValues("Set-Cookie").Any(h => h.Contains("X-Refresh-Token")));
+
+        var refreshToken = response.Headers.GetValues("Set-Cookie")
+            .First(h => h.StartsWith("X-Refresh-Token"))
+            .Split(';')[0]
+            .Split('=')[1];
+        client.DefaultRequestHeaders.Add("Cookie", $"X-Refresh-Token={refreshToken}");
+
+        var contentJsonString = await response.Content.ReadAsStringAsync();
+        var loginResponse = JsonSerializer.Deserialize<AuthResultModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
+        Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
+        Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
+
+        var apiLogoutObject = new
+        {
+            token = loginResponse.Token
+        };
+        jsonContent = new StringContent(JsonSerializer.Serialize(apiLogoutObject), Encoding.UTF8, "application/json");
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
+
+        response = await client.PostAsync("/Auth/Logout", jsonContent);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+    }
+
+    [Test]
+    public async Task Auth_LogoutAll_Suceeds()
+    {
+        var client = Factory.CreateClient();
+
+        var apiUserLoginObject = new
+        {
+            Email = "SuperAdminRole@example.com",
+            Password = "Password123",
+        };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(apiUserLoginObject), Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("/Auth/Login", jsonContent);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+
+        Assert.That(response.Headers.Contains("Set-Cookie"));
+        Assert.That(response.Headers.GetValues("Set-Cookie").Any(h => h.Contains("X-Refresh-Token")));
+
+        var refreshToken = response.Headers.GetValues("Set-Cookie")
+            .First(h => h.StartsWith("X-Refresh-Token"))
+            .Split(';')[0]
+            .Split('=')[1];
+        client.DefaultRequestHeaders.Add("Cookie", $"X-Refresh-Token={refreshToken}");
+
+        var contentJsonString = await response.Content.ReadAsStringAsync();
+        var loginResponse = JsonSerializer.Deserialize<AuthResultModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
+        Assert.That(loginResponse.Token, Is.Not.EqualTo(string.Empty));
+        Assert.That(loginResponse.Token, Is.Not.EqualTo(null));
+
+        var apiLogoutObject = new
+        {
+            token = loginResponse.Token
+        };
+        jsonContent = new StringContent(JsonSerializer.Serialize(apiLogoutObject), Encoding.UTF8, "application/json");
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse.Token);
+
+        response = await client.PostAsync("/Auth/LogoutAll", jsonContent);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
+    }
 }

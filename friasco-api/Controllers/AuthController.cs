@@ -1,6 +1,8 @@
-﻿using friasco_api.Helpers;
+﻿using friasco_api.Enums;
+using friasco_api.Helpers;
 using friasco_api.Models;
 using friasco_api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace friasco_api.Controllers;
@@ -60,10 +62,7 @@ public class AuthController : ControllerBase
     {
         _logger.Log(LogLevel.Debug, "AuthController::Refresh");
 
-        if (!HttpContext.Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
-        {
-            throw new AppException("No refresh token in auth cookie"); // TODO: Testing, Change so user does not have too much info
-        }
+        var refreshToken = GetRefreshTokenFromRequestCookie();
 
         var authResult = await _authService.Refresh(model.Token!, refreshToken);
 
@@ -79,10 +78,33 @@ public class AuthController : ControllerBase
 
     [HttpPost]
     [Route("[action]")]
+    [Authorize(Policy = nameof(UserRoleEnum.User))]
     public async Task<IActionResult> Logout(AuthTokenRequestModel model)
     {
+        _logger.Log(LogLevel.Debug, "AuthController::Logout");
+
+        var refreshToken = GetRefreshTokenFromRequestCookie();
+
+        await _authService.Logout(model.Token!);
+
         return Ok();
     }
+
+    [HttpPost]
+    [Route("[action]")]
+    [Authorize(Policy = nameof(UserRoleEnum.User))]
+    public async Task<IActionResult> LogoutAll(AuthTokenRequestModel model)
+    {
+        _logger.Log(LogLevel.Debug, "AuthController::LogoutAll");
+
+        var refreshToken = GetRefreshTokenFromRequestCookie();
+
+        await _authService.LogoutAll(model.Token!);
+
+        return Ok();
+    }
+
+    #region Helpers
 
     private void AddAuthCookieToResponse(AuthResultModel authResult)
     {
@@ -96,4 +118,16 @@ public class AuthController : ControllerBase
             //SameSite = SameSiteMode.Strict // TODO: Production, Activate before deploying
         });
     }
+
+    private string GetRefreshTokenFromRequestCookie()
+    {
+        if (!HttpContext.Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
+        {
+            throw new AppException("No refresh token in auth cookie"); // TODO: Testing, Change so user does not have too much info
+        }
+
+        return refreshToken;
+    }
+
+    #endregion
 }
