@@ -12,6 +12,7 @@ public interface IUserService
 {
     Task<IEnumerable<User>> GetAll();
     Task<User> GetById(int id);
+    Task<User> GetByGuid(Guid userGuid);
     Task<User> GetByEmail(string email);
     Task<int> Create(UserCreateRequestModel model);
     Task<int> Update(int id, UserUpdateRequestModel model);
@@ -50,6 +51,20 @@ public class UserService : IUserService
         if (user == null)
         {
             throw new KeyNotFoundException($"User with id [{id}] not found");
+        }
+
+        return user;
+    }
+
+    public async Task<User> GetByGuid(Guid userGuid)
+    {
+        _logger.LogDebug($"UserService::GetByGuid userGuid: {userGuid}");
+
+        var user = await _userRepository.GetByGuid(userGuid);
+
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"User with userGuid [{userGuid}] not found");
         }
 
         return user;

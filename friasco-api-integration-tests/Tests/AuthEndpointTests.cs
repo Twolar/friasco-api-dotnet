@@ -199,12 +199,18 @@ public class AuthEndpointTests : IntegrationTestBase
 
             Assert.That(response.Headers.Contains("Set-Cookie"));
             Assert.That(response.Headers.GetValues("Set-Cookie").Any(h => h.Contains("X-Refresh-Token")));
+            Assert.That(response.Headers.GetValues("Set-Cookie").Any(h => h.Contains("X-Access-Jti")));
 
             var refreshToken = response.Headers.GetValues("Set-Cookie")
                 .First(h => h.StartsWith("X-Refresh-Token"))
                 .Split(';')[0]
                 .Split('=')[1];
             client.DefaultRequestHeaders.Add("Cookie", $"X-Refresh-Token={refreshToken}");
+            var accessTokenJti = response.Headers.GetValues("Set-Cookie")
+                .First(h => h.StartsWith("X-Access-Jti"))
+                .Split(';')[0]
+                .Split('=')[1];
+            client.DefaultRequestHeaders.Add("Cookie", $"X-Access-Jti={accessTokenJti}");
 
             var contentJsonString = await response.Content.ReadAsStringAsync();
             var loginResponse = JsonSerializer.Deserialize<AuthResultModel>(contentJsonString, DefaultTestingJsonSerializerOptions);
@@ -214,13 +220,7 @@ public class AuthEndpointTests : IntegrationTestBase
             // Sleep for 1 seconds so that jwt expires
             await Task.Delay(1000);
 
-            var apiRefreshObject = new
-            {
-                token = loginResponse.Token
-            };
-            jsonContent = new StringContent(JsonSerializer.Serialize(apiRefreshObject), Encoding.UTF8, "application/json");
-
-            response = await client.PostAsync("/Auth/Refresh", jsonContent);
+            response = await client.GetAsync("/Auth/Refresh");
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.IsSuccessStatusCode, Is.EqualTo(true));
 
@@ -239,7 +239,7 @@ public class AuthEndpointTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task Auth_Logout_Suceeds()
+    public async Task Auth_Logout_Succeeds()
     {
         var client = Factory.CreateClient();
 
@@ -276,7 +276,7 @@ public class AuthEndpointTests : IntegrationTestBase
     }
 
     [Test]
-    public async Task Auth_LogoutAll_Suceeds()
+    public async Task Auth_LogoutAll_Succeeds()
     {
         var client = Factory.CreateClient();
 

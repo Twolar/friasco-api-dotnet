@@ -224,49 +224,16 @@ public class AuthServiceTests
         };
 
         _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
-        _userServiceMock.Setup(u => u.GetById(It.IsAny<int>())).ReturnsAsync(user);
+        _userServiceMock.Setup(u => u.GetByGuid(It.IsAny<Guid>())).ReturnsAsync(user);
 
-        var authResult = await _authService.Refresh(accessToken, storedRefreshToken.Token);
+        var authResult = await _authService.Refresh(accessTokenId, storedRefreshToken.Token);
 
         Assert.IsNotNull(authResult);
         Assert.That(authResult.Token, Is.Not.EqualTo(null));
         Assert.That(authResult.Token.Length, Is.AtLeast(10));
 
         _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
-        _userServiceMock.Verify(u => u.GetById(It.IsAny<int>()), Times.Once);
-    }
-
-    [Test]
-    public async Task Refresh_ThrowsException_WhenJwtNotExpired()
-    {
-        var user = new User
-        {
-            Id = 1,
-            Username = "User1",
-            Email = "user1@example.com",
-            FirstName = "user1First",
-            LastName = "user1Last",
-            Role = UserRoleEnum.User,
-            Guid = Guid.NewGuid()
-        };
-
-        var accessTokenId = Guid.NewGuid().ToString();
-        var accessToken = await CreateJwtToken(user, accessTokenId, 45000);
-
-        var refreshTokenExpiryDays = Convert.ToInt64(Environment.GetEnvironmentVariable("REFRESH_TOKEN_EXPIRY_DAYS"));
-        var storedRefreshToken = new RefreshToken
-        {
-            Token = Guid.NewGuid().ToString(),
-            JwtId = accessTokenId,
-            UserGuid = user.Guid,
-            CreatedDate = DateTime.UtcNow,
-            ExpirationDate = DateTime.UtcNow.AddDays(refreshTokenExpiryDays),
-            IsUsed = false,
-            IsValid = true
-        };
-
-        var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
-        Assert.That(exception.Message, Is.EqualTo($"Token has not expired"));
+        _userServiceMock.Verify(u => u.GetByGuid(It.IsAny<Guid>()), Times.Once);
     }
 
     [Test]
@@ -484,13 +451,13 @@ public class AuthServiceTests
         };
 
         _authRepository.Setup(a => a.GetRefreshTokenByToken(It.IsAny<string>())).ReturnsAsync(storedRefreshToken);
-        _userServiceMock.Setup(u => u.GetById(It.IsAny<int>())).ThrowsAsync(new KeyNotFoundException($"User with id [{user.Id}] not found"));
+        _userServiceMock.Setup(u => u.GetByGuid(It.IsAny<Guid>())).ThrowsAsync(new KeyNotFoundException($"User with userGuid [{user.Guid}] not found"));
 
-        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _authService.Refresh(accessToken, storedRefreshToken.Token));
-        Assert.That(exception.Message, Is.EqualTo($"User with id [{user.Id}] not found"));
+        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _authService.Refresh(accessTokenId, storedRefreshToken.Token));
+        Assert.That(exception.Message, Is.EqualTo($"User with userGuid [{user.Guid}] not found"));
 
         _authRepository.Verify(a => a.GetRefreshTokenByToken(It.IsAny<string>()), Times.Once);
-        _userServiceMock.Verify(u => u.GetById(It.IsAny<int>()), Times.Once);
+        _userServiceMock.Verify(u => u.GetByGuid(It.IsAny<Guid>()), Times.Once);
     }
 
     [Test]

@@ -43,7 +43,7 @@ public class AuthControllerTests
     public async Task Login_ReturnsOkResult()
     {
         var model = new AuthLoginRequestModel();
-        _authServiceMock.Setup(x => x.Login(model)).ReturnsAsync(new AuthResultModel("JwtString", "RefreshToken"));
+        _authServiceMock.Setup(x => x.Login(model)).ReturnsAsync(new AuthResultModel("JwtString", "JwtId", "RefreshToken"));
         _httpContextMock.Setup(x => x.Response).Returns(_httpResponseMock.Object);
         _httpResponseMock.Setup(x => x.Cookies).Returns(_responseCookiesMock.Object);
 
@@ -57,7 +57,7 @@ public class AuthControllerTests
     public async Task Register_ReturnsOkResult()
     {
         var model = new UserCreateRequestModel();
-        _authServiceMock.Setup(x => x.Register(model)).ReturnsAsync(new AuthResultModel("JwtString", "RefreshToken"));
+        _authServiceMock.Setup(x => x.Register(model)).ReturnsAsync(new AuthResultModel("JwtString", "JwtId", "RefreshToken"));
         _httpContextMock.Setup(x => x.Response).Returns(_httpResponseMock.Object);
         _httpResponseMock.Setup(x => x.Cookies).Returns(_responseCookiesMock.Object);
 
@@ -73,7 +73,7 @@ public class AuthControllerTests
         var oldRefreshToken = "OldRefreshToken";
 
         var model = new AuthTokenRequestModel();
-        _authServiceMock.Setup(x => x.Refresh(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new AuthResultModel("NewJwtToken", "NewRefreshToken"));
+        _authServiceMock.Setup(x => x.Refresh(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new AuthResultModel("NewJwtToken", "JwtId", "NewRefreshToken"));
         _httpContextMock.Setup(x => x.Request).Returns(_httpRequestMock.Object);
         _httpContextMock.Setup(x => x.Response).Returns(_httpResponseMock.Object);
 
@@ -83,12 +83,12 @@ public class AuthControllerTests
         _httpResponseMock.Setup(x => x.Cookies).Returns(_responseCookiesMock.Object);
         _responseCookiesMock.Setup(x => x.Append(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CookieOptions>()));
 
-        var result = await _controller.Refresh(model);
+        var result = await _controller.Refresh();
         Assert.IsInstanceOf<OkObjectResult>(result);
 
         _authServiceMock.Verify(x => x.Refresh(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        _responseCookieCollectionMock.Verify(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken), Times.Once);
-        _responseCookiesMock.Verify(x => x.Append(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CookieOptions>()), Times.Once);
+        _responseCookieCollectionMock.Verify(x => x.TryGetValue(It.IsAny<string>(), out oldRefreshToken), Times.Exactly(2));
+        _responseCookiesMock.Verify(x => x.Append(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CookieOptions>()),  Times.Exactly(2));
     }
 
     [Test]

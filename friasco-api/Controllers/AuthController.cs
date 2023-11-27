@@ -56,18 +56,16 @@ public class AuthController : ControllerBase
         );
     }
 
-    [HttpPost]
+    [HttpGet]
     [Route("[action]")]
-    public async Task<IActionResult> Refresh(AuthTokenRequestModel model)
+    public async Task<IActionResult> Refresh()
     {
-        // TODO: Refactor this endpoint for persistent client login...
-        //      i.e. Change to get request with no accessToken provided (they expire quickly)
-
         _logger.Log(LogLevel.Debug, "AuthController::Refresh");
 
+        var accessTokenJti = GetAccessTokenJtiFromRequestCookie();
         var refreshToken = GetRefreshTokenFromRequestCookie();
 
-        var authResult = await _authService.Refresh(model.Token!, refreshToken);
+        var authResult = await _authService.Refresh(accessTokenJti, refreshToken);
 
         AddAuthCookieToResponse(authResult);
 
@@ -120,6 +118,16 @@ public class AuthController : ControllerBase
 
             //SameSite = SameSiteMode.Strict // TODO: Production, Activate before deploying
         });
+
+        // Add cookie with new accessTokenJti in the response
+        HttpContext.Response.Cookies.Append("X-Access-Jti", authResult.TokenId, new CookieOptions()
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.None,
+            Secure = true // This is required when SameSite is None
+
+            //SameSite = SameSiteMode.Strict // TODO: Production, Activate before deploying
+        });
     }
 
     private string GetRefreshTokenFromRequestCookie()
@@ -127,6 +135,16 @@ public class AuthController : ControllerBase
         if (!HttpContext.Request.Cookies.TryGetValue("X-Refresh-Token", out var refreshToken))
         {
             throw new AppException("No refresh token in auth cookie"); // TODO: Testing, Change so user does not have too much info
+        }
+
+        return refreshToken;
+    }
+
+    private string GetAccessTokenJtiFromRequestCookie()
+    {
+        if (!HttpContext.Request.Cookies.TryGetValue("X-Access-Jti", out var refreshToken))
+        {
+            throw new AppException("No Access Token Jti in auth cookie"); // TODO: Testing, Change so user does not have too much info
         }
 
         return refreshToken;

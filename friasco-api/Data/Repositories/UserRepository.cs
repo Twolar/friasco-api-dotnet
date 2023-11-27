@@ -6,6 +6,7 @@ public interface IUserRepository
 {
     Task<IEnumerable<User>> GetAll();
     Task<User> GetById(int id);
+    Task<User> GetByGuid(Guid userGuid);
     Task<User> GetByEmail(string email);
     Task<int> Create(User user);
     Task<int> Update(User user);
@@ -46,6 +47,19 @@ public class UserRepository : IUserRepository
                 WHERE id = @id
             ";
             return await _dapperWrapper.QueryFirstOrDefaultAsync<User>(connection, sql, new { id });
+        }
+    }
+
+    public async Task<User> GetByGuid(Guid userGuid)
+    {
+        _logger.LogDebug($"UserRepository::GetByGuid userGuid: {userGuid}");
+        using (var connection = _dataContext.CreateConnection())
+        {
+            var sql = @"
+                SELECT * FROM Users
+                WHERE Guid = @userGuid
+            ";
+            return await _dapperWrapper.QueryFirstOrDefaultAsync<User>(connection, sql, new { userGuid });
         }
     }
 

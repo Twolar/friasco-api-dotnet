@@ -75,6 +75,30 @@ public class UserServiceTests
     }
 
     [Test]
+    public async Task GetByGuid_ReturnsUser()
+    {
+        var expectedUser = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
+        _userRepositoryMock.Setup(x => x.GetByGuid(expectedUser.Guid)).ReturnsAsync(expectedUser);
+
+        var user = await _userService.GetByGuid(expectedUser.Guid);
+
+        Assert.That(user, Is.EqualTo(expectedUser));
+        _userRepositoryMock.Verify(x => x.GetByGuid(expectedUser.Guid), Times.Once());
+    }
+
+    [Test]
+    public async Task GetByGuid_ThrowsExceptionIfUserDoesNotExistAlready()
+    {
+        var expectedUser = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
+        _userRepositoryMock.Setup(x => x.GetByGuid(expectedUser.Guid)).ReturnsAsync((User)null);
+
+        var exception = Assert.ThrowsAsync<KeyNotFoundException>(async () => await _userService.GetByGuid(expectedUser.Guid));
+        Assert.That(exception.Message, Is.EqualTo($"User with userGuid [{expectedUser.Guid}] not found"));
+
+        _userRepositoryMock.Verify(x => x.GetByGuid(It.IsAny<Guid>()), Times.Once());
+    }
+
+    [Test]
     public async Task GetByEmail_ReturnsUser()
     {
         var userEmail = "user1@example.com";

@@ -13,9 +13,9 @@ public interface IAuthService
 {
     Task<AuthResultModel> Login(AuthLoginRequestModel model);
     Task<AuthResultModel> Register(UserCreateRequestModel model);
-    Task<AuthResultModel> Refresh(string accessToken, string refreshToken);
-    Task Logout(string accessToken);
-    Task LogoutAll(string accessToken);
+    Task<AuthResultModel> Refresh(string accessTokenJti, string refreshToken);
+    Task Logout(string refreshToken);
+    Task LogoutAll(string refreshToken);
 }
 
 public class AuthService : IAuthService
@@ -77,23 +77,9 @@ public class AuthService : IAuthService
         return authResult;
     }
 
-    public async Task<AuthResultModel> Refresh(string accessToken, string refreshToken)
+    public async Task<AuthResultModel> Refresh(string accessTokenJti, string refreshToken)
     {
         _logger.Log(LogLevel.Debug, "AuthService::Refresh");
-
-        var tokenClaimsPrinciple = GetClaimsPrincipalFromToken(accessToken);
-        if (tokenClaimsPrinciple == null)
-        {
-            throw new AppException("Invalid token");
-        }
-
-        var jwtExp = tokenClaimsPrinciple.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Exp).Value;
-        DateTimeOffset expirationTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(jwtExp));
-        DateTime tokenExpirationDateTime = expirationTime.DateTime;
-        if (tokenExpirationDateTime > DateTime.UtcNow)
-        {
-            throw new AppException("Token has not expired"); // TODO: Testing, Change so user does not have too much info
-        }
 
         var storedRefreshToken = await _authRepository.GetRefreshTokenByToken(refreshToken);
         if (storedRefreshToken == null)
@@ -116,14 +102,12 @@ public class AuthService : IAuthService
             throw new AppException("Refresh token has been used"); // TODO: Testing, Change so user does not have too much info
         }
 
-        var jti = tokenClaimsPrinciple.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
-        if (storedRefreshToken.JwtId != jti)
+        if (storedRefreshToken.JwtId != accessTokenJti)
         {
             throw new AppException("Refresh token does not match JWT"); // TODO: Testing, Change so user does not have too much info
         }
 
-        var userId = Convert.ToInt32(tokenClaimsPrinciple.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
-        var user = await _userService.GetById(userId);
+        var user = await _userService.GetByGuid(storedRefreshToken!.UserGuid!.Value);
 
         // Delete old refresh token as it is about to be rotated to a newly generated one
         await _authRepository.DeleteRefreshTokenByJwtId(storedRefreshToken.JwtId);
@@ -162,39 +146,6 @@ public class AuthService : IAuthService
     }
 
     #region Helpers
-
-    private ClaimsPrincipal? GetClaimsPrincipalFromToken(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        try
-        {
-            var tokenRefreshValidationParameters = _tokenValidationParameters.Clone();
-            tokenRefreshValidationParameters.ValidateLifetime = false;
-            var principle = tokenHandler.ValidateToken(token, tokenRefreshValidationParameters, out var validatedToken);
-            if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
-            {
-                return null;
-            }
-            return principle;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private bool IsJwtWithValidSecurityAlgorithm(SecurityToken securityToken)
-    {
-        if (securityToken is JwtSecurityToken jwtSecurityToken)
-        {
-            if (jwtSecurityToken.Header.Alg == SecurityAlgorithms.HmacSha256)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private async Task<AuthResultModel> GenerateAuthResultForUser(User user)
     {
@@ -236,7 +187,7 @@ public class AuthService : IAuthService
         // Add refresh token to the DB
         await _authRepository.CreateRefreshToken(refreshToken);
 
-        return new AuthResultModel(tokenHandler.WriteToken(token), refreshToken.Token);
+        return new AuthResultModel(tokenHandler.WriteToken(token), token.Id, refreshToken.Token);
     }
 
     #endregion

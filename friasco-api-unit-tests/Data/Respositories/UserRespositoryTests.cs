@@ -55,6 +55,18 @@ public class UserRespositoryTests
     }
 
     [Test]
+    public async Task GetByGuid_ReturnsUserByGuid()
+    {
+        var expectedUser = new User { Id = 1, Username = "User1", Email = "user1@example.com", FirstName = "user1First", LastName = "user1Last", Role = UserRoleEnum.User, Guid = Guid.NewGuid() };
+        _mockDapperWrapper.Setup(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(expectedUser);
+
+        var user = await _userRepository.GetByGuid(expectedUser.Guid);
+
+        Assert.That(user, Is.EqualTo(expectedUser));
+        _mockDapperWrapper.Verify(x => x.QueryFirstOrDefaultAsync<User>(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>()), Times.Once());
+    }
+
+    [Test]
     public async Task GetByEmail_ReturnsUserByEmail()
     {
         var userEmail = "user1@example.com";
