@@ -126,41 +126,39 @@ public class AuthService : IAuthService
         var user = await _userService.GetById(userId);
 
         // Delete old refresh token as it is about to be rotated to a newly generated one
-        await _authRepository.DeleteRefreshTokensByJwtId(storedRefreshToken.JwtId);
+        await _authRepository.DeleteRefreshTokenByJwtId(storedRefreshToken.JwtId);
 
         return await GenerateAuthResultForUser(user);
     }
 
-    public async Task Logout(string accessToken)
+    public async Task Logout(string refreshToken)
     {
         _logger.Log(LogLevel.Debug, "AuthService::Logout");
 
-        var tokenClaimsPrinciple = GetClaimsPrincipalFromToken(accessToken);
-        if (tokenClaimsPrinciple == null)
+        var storedRefreshToken = await _authRepository.GetRefreshTokenByToken(refreshToken);
+
+        if (storedRefreshToken == null)
         {
-            throw new AppException("Invalid token supplied");
+            throw new AppException("Refresh token does not exist"); // TODO: Testing, Change so user does not have too much info
         }
 
-        string jwtId = tokenClaimsPrinciple.Claims.Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
-
-        await _authRepository.DeleteRefreshTokensByJwtId(jwtId);
+        await _authRepository.DeleteRefreshTokenByJwtId(storedRefreshToken!.JwtId);
     }
 
-    public async Task LogoutAll(string accessToken)
+    public async Task LogoutAll(string refreshToken)
     {
         _logger.Log(LogLevel.Debug, "AuthService::Logout");
 
-        var tokenClaimsPrinciple = GetClaimsPrincipalFromToken(accessToken);
-        if (tokenClaimsPrinciple == null)
+        var storedRefreshToken = await _authRepository.GetRefreshTokenByToken(refreshToken);
+
+        if (storedRefreshToken == null)
         {
-            throw new AppException("Invalid token supplied");
+            throw new AppException("Refresh token does not exist"); // TODO: Testing, Change so user does not have too much info
         }
 
-        string userIdString = tokenClaimsPrinciple.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
-        var userId = Convert.ToInt32(userIdString);
-        var user = await _userService.GetById(userId);
+        var userGuid = storedRefreshToken!.UserGuid!.Value;
 
-        await _authRepository.DeleteRefreshTokensByUserGuid(user.Guid);
+        await _authRepository.DeleteRefreshTokensByUserGuid(userGuid);
     }
 
     #region Helpers

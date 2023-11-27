@@ -110,7 +110,7 @@ public class AuthRepositoryTests
         };
         _mockDapperWrapper.Setup(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync(1);
 
-        var rowsAffected = await _authRepository.DeleteRefreshTokensByJwtId(tokenToDelete.JwtId);
+        var rowsAffected = await _authRepository.DeleteRefreshTokenByJwtId(tokenToDelete.JwtId);
 
         Assert.That(rowsAffected, Is.EqualTo(1));
         _mockDapperWrapper.Verify(x => x.ExecuteAsync(It.IsAny<IDbConnection>(), It.IsAny<string>(), It.IsAny<object>()), Times.Once());

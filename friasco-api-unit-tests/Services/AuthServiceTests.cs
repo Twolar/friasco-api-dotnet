@@ -522,11 +522,11 @@ public class AuthServiceTests
             IsValid = true
         };
 
-        _authRepository.Setup(a => a.DeleteRefreshTokensByJwtId(It.IsAny<string>())).ReturnsAsync(1);
+        _authRepository.Setup(a => a.DeleteRefreshTokenByJwtId(It.IsAny<string>())).ReturnsAsync(1);
 
         await _authService.Logout(accessToken);
 
-        _authRepository.Verify(a => a.DeleteRefreshTokensByJwtId(It.IsAny<string>()), Times.Once);
+        _authRepository.Verify(a => a.DeleteRefreshTokenByJwtId(It.IsAny<string>()), Times.Once);
     }
 
     [Test]

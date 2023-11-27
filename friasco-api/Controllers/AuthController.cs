@@ -60,6 +60,9 @@ public class AuthController : ControllerBase
     [Route("[action]")]
     public async Task<IActionResult> Refresh(AuthTokenRequestModel model)
     {
+        // TODO: Refactor this endpoint for persistent client login...
+        //      i.e. Change to get request with no accessToken provided (they expire quickly)
+
         _logger.Log(LogLevel.Debug, "AuthController::Refresh");
 
         var refreshToken = GetRefreshTokenFromRequestCookie();
@@ -76,30 +79,30 @@ public class AuthController : ControllerBase
         );
     }
 
-    [HttpPost]
+    [HttpGet]
     [Route("[action]")]
     [Authorize(Policy = nameof(UserRoleEnum.User))]
-    public async Task<IActionResult> Logout(AuthTokenRequestModel model)
+    public async Task<IActionResult> Logout()
     {
         _logger.Log(LogLevel.Debug, "AuthController::Logout");
 
         var refreshToken = GetRefreshTokenFromRequestCookie();
 
-        await _authService.Logout(model.Token!);
+        await _authService.Logout(refreshToken);
 
         return Ok();
     }
 
-    [HttpPost]
+    [HttpGet]
     [Route("[action]")]
     [Authorize(Policy = nameof(UserRoleEnum.User))]
-    public async Task<IActionResult> LogoutAll(AuthTokenRequestModel model)
+    public async Task<IActionResult> LogoutAll()
     {
         _logger.Log(LogLevel.Debug, "AuthController::LogoutAll");
 
         var refreshToken = GetRefreshTokenFromRequestCookie();
 
-        await _authService.LogoutAll(model.Token!);
+        await _authService.LogoutAll(refreshToken);
 
         return Ok();
     }

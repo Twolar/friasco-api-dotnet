@@ -8,7 +8,7 @@ public interface IAuthRepository
     Task<RefreshToken> GetRefreshTokenByToken(string token);
     Task<int> CreateRefreshToken(RefreshToken refreshToken);
     Task<int> UpdateRefreshToken(RefreshToken refreshToken);
-    Task<int> DeleteRefreshTokensByJwtId(string jwtId);
+    Task<int> DeleteRefreshTokenByJwtId(string jwtId);
     Task<int> DeleteRefreshTokensByUserGuid(Guid userGuid);
 }
 
@@ -83,9 +83,9 @@ public class AuthRepository : IAuthRepository
         }
     }
 
-    public async Task<int> DeleteRefreshTokensByJwtId(string jwtId)
+    public async Task<int> DeleteRefreshTokenByJwtId(string jwtId)
     {
-        _logger.LogDebug($"AuthRepository::DeleteRefreshTokensByJwtId jwtId: {jwtId}");
+        _logger.LogDebug($"AuthRepository::DeleteRefreshTokenByJwtId jwtId: {jwtId}");
         using (var connection = _dataContext.CreateConnection())
         {
             var sql = @"
