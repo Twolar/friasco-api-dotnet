@@ -73,7 +73,7 @@ public class AuthControllerTests
     {
         var oldRefreshToken = "OldRefreshToken";
 
-        var model = new AuthRefreshRequestModel();
+        var model = new AuthTokenRequestModel();
         _authServiceMock.Setup(x => x.Refresh(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(new AuthResultModel("NewJwtToken", "NewRefreshToken"));
         _httpContextMock.Setup(x => x.Request).Returns(_httpRequestMock.Object);
         _httpContextMock.Setup(x => x.Response).Returns(_httpResponseMock.Object);

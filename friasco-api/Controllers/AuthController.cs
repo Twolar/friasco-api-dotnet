@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
 
     [HttpPost]
     [Route("[action]")]
-    public async Task<IActionResult> Refresh(AuthRefreshRequestModel model)
+    public async Task<IActionResult> Refresh(AuthTokenRequestModel model)
     {
         _logger.Log(LogLevel.Debug, "AuthController::Refresh");
 
@@ -75,6 +75,13 @@ public class AuthController : ControllerBase
                 token = authResult.Token,
             }
         );
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> Logout(AuthTokenRequestModel model)
+    {
+        return Ok();
     }
 
     private void AddAuthCookieToResponse(AuthResultModel authResult)
