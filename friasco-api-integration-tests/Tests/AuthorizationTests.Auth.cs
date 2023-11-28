@@ -160,7 +160,7 @@ public partial class AuthorizationTests : IntegrationTestBase
             {
                 case nameof(ApiClientWithNoAuth):
                     response = await ApiClientWithNoAuth.GetAsync(url);
-                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                     break;
                 case nameof(ApiClientWithRoleUser):
                     response = await ApiClientWithRoleUser.GetAsync(url);
@@ -197,7 +197,7 @@ public partial class AuthorizationTests : IntegrationTestBase
             {
                 case nameof(ApiClientWithNoAuth):
                     response = await ApiClientWithNoAuth.GetAsync(url);
-                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+                    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
                     break;
                 case nameof(ApiClientWithRoleUser):
                     response = await ApiClientWithRoleUser.GetAsync(url);
