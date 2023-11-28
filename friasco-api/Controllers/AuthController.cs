@@ -88,6 +88,9 @@ public class AuthController : ControllerBase
 
         await _authService.Logout(refreshToken);
 
+        HttpContext.Response.Cookies.Delete("X-Refresh-Token");
+        HttpContext.Response.Cookies.Delete("X-Auth");
+
         return Ok();
     }
 
@@ -101,6 +104,9 @@ public class AuthController : ControllerBase
         var refreshToken = GetRefreshTokenFromRequestCookie();
 
         await _authService.LogoutAll(refreshToken);
+
+        HttpContext.Response.Cookies.Delete("X-Refresh-Token");
+        HttpContext.Response.Cookies.Delete("X-Auth");
 
         return Ok();
     }
