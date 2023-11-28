@@ -199,7 +199,7 @@ public class AuthEndpointTests : IntegrationTestBase
 
             Assert.That(response.Headers.Contains("Set-Cookie"));
             Assert.That(response.Headers.GetValues("Set-Cookie").Any(h => h.Contains("X-Refresh-Token")));
-            Assert.That(response.Headers.GetValues("Set-Cookie").Any(h => h.Contains("X-Access-Jti")));
+            Assert.That(response.Headers.GetValues("Set-Cookie").Any(h => h.Contains("X-Auth")));
 
             var refreshToken = response.Headers.GetValues("Set-Cookie")
                 .First(h => h.StartsWith("X-Refresh-Token"))
@@ -207,10 +207,10 @@ public class AuthEndpointTests : IntegrationTestBase
                 .Split('=')[1];
             client.DefaultRequestHeaders.Add("Cookie", $"X-Refresh-Token={refreshToken}");
             var accessTokenJti = response.Headers.GetValues("Set-Cookie")
-                .First(h => h.StartsWith("X-Access-Jti"))
+                .First(h => h.StartsWith("X-Auth"))
                 .Split(';')[0]
                 .Split('=')[1];
-            client.DefaultRequestHeaders.Add("Cookie", $"X-Access-Jti={accessTokenJti}");
+            client.DefaultRequestHeaders.Add("Cookie", $"X-Auth={accessTokenJti}");
 
             var contentJsonString = await response.Content.ReadAsStringAsync();
             var loginResponse = JsonSerializer.Deserialize<AuthResultModel>(contentJsonString, DefaultTestingJsonSerializerOptions);

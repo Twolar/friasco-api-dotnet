@@ -120,7 +120,7 @@ public class AuthController : ControllerBase
         });
 
         // Add cookie with new accessTokenJti in the response
-        HttpContext.Response.Cookies.Append("X-Access-Jti", authResult.TokenId, new CookieOptions()
+        HttpContext.Response.Cookies.Append("X-Auth", authResult.TokenId, new CookieOptions()
         {
             HttpOnly = true,
             SameSite = SameSiteMode.None,
@@ -142,7 +142,7 @@ public class AuthController : ControllerBase
 
     private string GetAccessTokenJtiFromRequestCookie()
     {
-        if (!HttpContext.Request.Cookies.TryGetValue("X-Access-Jti", out var refreshToken))
+        if (!HttpContext.Request.Cookies.TryGetValue("X-Auth", out var refreshToken))
         {
             throw new AppException("No Access Token Jti in auth cookie"); // TODO: Testing, Change so user does not have too much info
         }
