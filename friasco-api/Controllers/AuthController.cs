@@ -1,8 +1,6 @@
-﻿using friasco_api.Enums;
-using friasco_api.Helpers;
+﻿using friasco_api.Helpers;
 using friasco_api.Models;
 using friasco_api.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace friasco_api.Controllers;
@@ -79,7 +77,6 @@ public class AuthController : ControllerBase
 
     [HttpGet]
     [Route("[action]")]
-    [Authorize(Policy = nameof(UserRoleEnum.User))]
     public async Task<IActionResult> Logout()
     {
         _logger.Log(LogLevel.Debug, "AuthController::Logout");
@@ -96,7 +93,6 @@ public class AuthController : ControllerBase
 
     [HttpGet]
     [Route("[action]")]
-    [Authorize(Policy = nameof(UserRoleEnum.User))]
     public async Task<IActionResult> LogoutAll()
     {
         _logger.Log(LogLevel.Debug, "AuthController::LogoutAll");
