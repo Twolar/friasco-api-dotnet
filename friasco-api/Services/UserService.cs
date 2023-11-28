@@ -129,7 +129,15 @@ public class UserService : IUserService
             {
                 throw new AppException($"User with the email [{model.Email}] already exists");
             }
+        }
 
+        if (!string.IsNullOrEmpty(model.Username))
+        {
+            // Check if new Username already exists
+            if ((model.Username != user.Username) && await _userRepository.GetByUsername(model.Username) != null)
+            {
+                throw new AppException($"User with the Username [{model.Username}] already exists");
+            }
         }
 
         var apiClientRole = GetApiClientRole();
