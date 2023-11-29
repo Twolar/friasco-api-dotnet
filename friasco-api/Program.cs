@@ -5,8 +5,10 @@ using friasco_api.Data;
 using friasco_api.Data.Repositories;
 using friasco_api.Enums;
 using friasco_api.Helpers;
+using friasco_api.Helpers.AuthPolicies;
 using friasco_api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.Sqlite;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -73,23 +75,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     );
 
 // Policy Authorization
+builder.Services.AddSingleton<IAuthorizationHandler, AdminOrSelfHandler>();
 builder.Services.AddAuthorization(options =>
 {
     // User Policy
-    options.AddPolicy(nameof(UserRoleEnum.User), policy => policy.RequireRole(
+    options.AddPolicy(AuthPolicyEnum.User, policy => policy.RequireRole(
         nameof(UserRoleEnum.User),
         nameof(UserRoleEnum.Admin),
         nameof(UserRoleEnum.SuperAdmin)
     ));
     // Admin Policy
-    options.AddPolicy(nameof(UserRoleEnum.Admin), policy => policy.RequireRole(
+    options.AddPolicy(AuthPolicyEnum.Admin, policy => policy.RequireRole(
         nameof(UserRoleEnum.Admin),
         nameof(UserRoleEnum.SuperAdmin)
     ));
     // SuperAdmin Policy
-    options.AddPolicy(nameof(UserRoleEnum.SuperAdmin), policy => policy.RequireRole(
+    options.AddPolicy(AuthPolicyEnum.SuperAdmin, policy => policy.RequireRole(
         nameof(UserRoleEnum.SuperAdmin)
     ));
+    // AdminOrSelf Policy
+    options.AddPolicy(AuthPolicyEnum.AdminOrSelf, policy => policy.Requirements.Add(new AdminOrSelfRequirement()));
 });
 
 // Swagger page

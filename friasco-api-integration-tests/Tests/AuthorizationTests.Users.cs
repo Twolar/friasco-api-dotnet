@@ -72,6 +72,51 @@ public partial class AuthorizationTests : IntegrationTestBase
     }
 
     [Test]
+    public async Task Users_GetSelf_Auth()
+    {
+        User? userInDb = null;
+        HttpClient? userInDbClient = null;
+
+        var userCreateJsonObject = new
+        {
+            Username = "User1",
+            Email = "User1@example.com",
+            FirstName = "User1First",
+            LastName = "User1Last",
+            Role = UserRoleEnum.User,
+            Password = "Password123",
+            ConfirmPassword = "Password123"
+        };
+        var userCreateJsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
+
+        HttpResponseMessage? response;
+
+        try
+        {
+            var createResponse = await ApiClientWithRoleSuperAdmin.PostAsync("/users", userCreateJsonContent);
+            Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            userInDb = await DbUserGetByEmail(userCreateJsonObject.Email);
+            
+            userInDbClient = await CreateAuthenticatedHttpClient(userCreateJsonObject.Email, userCreateJsonObject.Password);
+
+            response = await userInDbClient.GetAsync($"/users/{userInDb.Id}");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+        finally
+        {
+            if (userInDbClient != null)
+            {
+                userInDbClient.Dispose();
+            }
+            if (userInDb != null)
+            {
+                await DbUserDeleteByEmail(userCreateJsonObject.Email);
+            }
+        }
+    }
+
+    [Test]
     [TestCaseSource(nameof(ApiClientNames))]
     public async Task Users_Create_Auth(string apiClientName)
     {
@@ -186,6 +231,56 @@ public partial class AuthorizationTests : IntegrationTestBase
             if (userInDb != null)
             {
                 await DbUserDeleteByEmail(newUser.Email);
+            }
+        }
+    }
+
+    [Test]
+    public async Task Users_UpdateSelf_Auth()
+    {
+        User? userInDb = null;
+        HttpClient? userInDbClient = null;
+
+        var userCreateJsonObject = new
+        {
+            Username = "User1",
+            Email = "User1@example.com",
+            FirstName = "User1First",
+            LastName = "User1Last",
+            Role = UserRoleEnum.User,
+            Password = "Password123",
+            ConfirmPassword = "Password123"
+        };
+        var userCreateJsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
+
+        var updateUserObject = new
+        {
+        };
+        JsonContent updateUserContent = JsonContent.Create(updateUserObject);
+
+        HttpResponseMessage? response;
+
+        try
+        {
+            var createResponse = await ApiClientWithRoleSuperAdmin.PostAsync("/users", userCreateJsonContent);
+            Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            userInDb = await DbUserGetByEmail(userCreateJsonObject.Email);
+            
+            userInDbClient = await CreateAuthenticatedHttpClient(userCreateJsonObject.Email, userCreateJsonObject.Password);
+
+            response = await userInDbClient.PutAsync($"/users/{userInDb.Id}", updateUserContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+        finally
+        {
+            if (userInDbClient != null)
+            {
+                userInDbClient.Dispose();
+            }
+            if (userInDb != null)
+            {
+                await DbUserDeleteByEmail(userCreateJsonObject.Email);
             }
         }
     }
