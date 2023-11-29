@@ -68,6 +68,19 @@ public class AuthControllerTests
     }
 
     [Test]
+    public async Task ChangePassword_ReturnsOkResult()
+    {
+        var id = 1;
+        var model = new AuthChangePasswordRequestModel();
+        _authServiceMock.Setup(x => x.ChangePassword(It.IsAny<int>(), It.IsAny<AuthChangePasswordRequestModel>()));
+
+        var result = await _controller.ChangePassword(id, model);
+        Assert.IsInstanceOf<OkResult>(result);
+
+        _authServiceMock.Verify(x => x.ChangePassword(It.IsAny<int>(), It.IsAny<AuthChangePasswordRequestModel>()), Times.Once);
+    }
+
+    [Test]
     public async Task Refresh_ReturnsOkResult()
     {
         var oldRefreshToken = "OldRefreshToken";

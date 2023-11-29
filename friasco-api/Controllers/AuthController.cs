@@ -1,6 +1,8 @@
-﻿using friasco_api.Helpers;
+﻿using friasco_api.Enums;
+using friasco_api.Helpers;
 using friasco_api.Models;
 using friasco_api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace friasco_api.Controllers;
@@ -52,6 +54,18 @@ public class AuthController : ControllerBase
                 token = authResult.Token,
             }
         );
+    }
+
+    [HttpPost]
+    [Route("[action]/{id}")]
+    [Authorize(Policy = AuthPolicyEnum.AdminOrSelf)]
+    public async Task<IActionResult> ChangePassword(int id, AuthChangePasswordRequestModel model)
+    {
+        _logger.Log(LogLevel.Debug, "AuthController::ChangePassword");
+
+        await _authService.ChangePassword(id, model);
+
+        return Ok();
     }
 
     [HttpGet]

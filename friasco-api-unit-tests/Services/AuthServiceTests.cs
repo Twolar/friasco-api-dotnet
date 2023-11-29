@@ -195,6 +195,67 @@ public class AuthServiceTests
     }
 
     [Test]
+    public async Task ChangePassword()
+    {
+        var userId = 1;
+        var expectedUser = new User
+        {
+            Id = userId,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            PasswordHash = "hashedPassword"
+        };
+        var requestModel = new AuthChangePasswordRequestModel
+        {
+            Password = "password123",
+            NewPassword = "password1234",
+            ConfirmNewPassword = "password1234",
+        };
+
+        _userServiceMock.Setup(x => x.GetById(expectedUser.Id)).ReturnsAsync(expectedUser);
+        _bcryptWrapperMock.Setup(x => x.Verify(requestModel.Password, expectedUser.PasswordHash)).Returns(true);
+
+        await _authService.ChangePassword(expectedUser.Id, requestModel);
+
+        _userServiceMock.Verify(x => x.GetById(expectedUser.Id), Times.Once());
+        _bcryptWrapperMock.Verify(x => x.Verify(requestModel.Password, expectedUser.PasswordHash), Times.Once);
+    }
+
+    [Test]
+    public async Task ChangePassword_ThrowsExceptionIfWrongPassword()
+    {
+        var userId = 1;
+        var expectedUser = new User
+        {
+            Id = userId,
+            Username = "User1",
+            Email = "user1@example.com",
+            FirstName = "user1First",
+            LastName = "user1Last",
+            Role = UserRoleEnum.User,
+            PasswordHash = "hashedPassword"
+        };
+        var requestModel = new AuthChangePasswordRequestModel
+        {
+            Password = "password123",
+            NewPassword = "password1234",
+            ConfirmNewPassword = "password1234",
+        };
+
+        _userServiceMock.Setup(x => x.GetById(expectedUser.Id)).ReturnsAsync(expectedUser);
+        _bcryptWrapperMock.Setup(x => x.Verify(requestModel.Password, expectedUser.PasswordHash)).Returns(false);
+
+        var exception = Assert.ThrowsAsync<AppException>(async () => await _authService.ChangePassword(expectedUser.Id, requestModel));
+        Assert.That(exception.Message, Is.EqualTo($"Password was incorrect"));
+
+        _userServiceMock.Verify(x => x.GetById(expectedUser.Id), Times.Once());
+        _bcryptWrapperMock.Verify(x => x.Verify(requestModel.Password, expectedUser.PasswordHash), Times.Once);
+    }
+
+    [Test]
     public async Task Refresh_ReturnsToken()
     {
         var user = new User

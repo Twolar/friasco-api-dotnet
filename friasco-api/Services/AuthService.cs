@@ -13,6 +13,7 @@ public interface IAuthService
 {
     Task<AuthResultModel> Login(AuthLoginRequestModel model);
     Task<AuthResultModel> Register(UserCreateRequestModel model);
+    Task ChangePassword(int id, AuthChangePasswordRequestModel model);
     Task<AuthResultModel> Refresh(string accessTokenJti, string refreshToken);
     Task Logout(string refreshToken);
     Task LogoutAll(string refreshToken);
@@ -75,6 +76,27 @@ public class AuthService : IAuthService
         var authResult = await GenerateAuthResultForUser(user);
 
         return authResult;
+    }
+
+    public async Task ChangePassword(int id, AuthChangePasswordRequestModel model)
+    {
+        _logger.Log(LogLevel.Debug, "AuthService::ChangePassword");
+
+        var user = await _userService.GetById(id);
+
+        bool userVerified = _bcryptWrapper.Verify(model.Password!, user.PasswordHash!);
+        if (!userVerified)
+        {
+            throw new AppException("Password was incorrect");
+        }
+
+        var userUpdateModel = new UserUpdateRequestModel
+        {
+            Password = model.NewPassword,
+            ConfirmPassword = model.ConfirmNewPassword
+        };
+
+        var result = await _userService.Update(id, userUpdateModel);
     }
 
     public async Task<AuthResultModel> Refresh(string accessTokenJti, string refreshToken)

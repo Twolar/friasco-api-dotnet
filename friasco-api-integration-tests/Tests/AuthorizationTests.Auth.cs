@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using friasco_api.Data.Entities;
@@ -217,6 +218,95 @@ public partial class AuthorizationTests : IntegrationTestBase
         }
         finally
         {
+        }
+    }
+
+    [Test]
+    [TestCaseSource(nameof(ApiClientNames))]
+    public async Task Auth_ChangePassword_Auth(string apiClientName)
+    {
+        var changePasswordObject = new AuthChangePasswordRequestModel
+        {
+        };
+        var jsonContent = new StringContent(JsonSerializer.Serialize(changePasswordObject), Encoding.UTF8, "application/json");
+
+        var url = "/Auth/ChangePassword/231";
+
+        HttpResponseMessage? response;
+
+        switch (apiClientName)
+        {
+            case nameof(ApiClientWithNoAuth):
+                response = await ApiClientWithNoAuth.PostAsync(url, jsonContent);
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+                break;
+            case nameof(ApiClientWithRoleUser):
+                response = await ApiClientWithRoleUser.PostAsync(url, jsonContent);
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+                break;
+            case nameof(ApiClientWithRoleAdmin):
+                response = await ApiClientWithRoleAdmin.PostAsync(url, jsonContent);
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                break;
+            case nameof(ApiClientWithRoleSuperAdmin):
+                response = await ApiClientWithRoleSuperAdmin.PostAsync(url, jsonContent);
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                break;
+            default:
+                throw new ArgumentException($"Invalid api client name: {apiClientName}");
+        }
+    }
+
+    [Test]
+    public async Task Auth_ChangePasswordSelf_Auth()
+    {
+        User? userInDb = null;
+        HttpClient? userInDbClient = null;
+
+        var userCreateJsonObject = new
+        {
+            Username = "User1",
+            Email = "User1@example.com",
+            FirstName = "User1First",
+            LastName = "User1Last",
+            Role = UserRoleEnum.User,
+            Password = "Password123",
+            ConfirmPassword = "Password123"
+        };
+        var userCreateJsonContent = new StringContent(JsonSerializer.Serialize(userCreateJsonObject), Encoding.UTF8, "application/json");
+
+        var changePasswordObject = new
+        {
+            Password = "Password123",
+            NewPassword = "Password123",
+            ConfirmNewPassword = "Password123"
+        };
+        JsonContent changePasswordContent = JsonContent.Create(changePasswordObject);
+
+        HttpResponseMessage? response;
+
+        try
+        {
+            var createResponse = await ApiClientWithRoleSuperAdmin.PostAsync("/users", userCreateJsonContent);
+            Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+            userInDb = await DbUserGetByEmail(userCreateJsonObject.Email);
+
+            userInDbClient = await CreateAuthenticatedHttpClient(userCreateJsonObject.Email, userCreateJsonObject.Password);
+
+            response = await userInDbClient.PostAsync($"/Auth/ChangePassword/{userInDb.Id}", changePasswordContent);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+        finally
+        {
+            if (userInDbClient != null)
+            {
+                userInDbClient.Dispose();
+            }
+            if (userInDb != null)
+            {
+                await DbUserDeleteByEmail(userCreateJsonObject.Email);
+            }
         }
     }
 }
