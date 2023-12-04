@@ -68,6 +68,16 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> ForgottenPassword(AuthForgottenPasswordModel model)
+    {
+        _logger.Log(LogLevel.Debug, "AuthController::ForgottenPassword");
+
+        // TODO: Implement this endpoint...
+        throw new AppException("Endpoint not implemented");
+    }
+
     [HttpGet]
     [Route("[action]")]
     public async Task<IActionResult> Refresh()
